@@ -21,6 +21,7 @@ Template.body.onRendered(function() {
             callee_id: Meteor.userId()
         });
         if (newIncomingCall) {
+            console.log("incoming call")
             Session.set("currentPhoneCall", newIncomingCall._id);
             window.VideoCallServices.startRingtone();
             VideoChatCallLog.update({
@@ -31,6 +32,7 @@ Template.body.onRendered(function() {
                     conn_dt: new Date().getTime()
                 }
             });
+            Modal.show("incomingCall");
 
 
         }

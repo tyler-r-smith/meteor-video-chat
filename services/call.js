@@ -62,9 +62,49 @@ if (Meteor.isServer) {
 else if (Meteor.isClient) {
     VideoCallServices = new class {
         constructor() {
-                this.peerConnection = {};
-                this.ringtone = new Audio('http://178.62.110.73:3000/nokia.mp3');
-                this.ringtone.loop = true;
+            this.peerConnection = {};
+            this.ringtone = new Audio('http://178.62.110.73:3000/nokia.mp3');
+            this.ringtone.loop = true;
+        }
+
+
+        /*
+         *   Terminate the call, if the call was successful, it will be populated with the userId of the terminator. 
+         *
+         */
+        callTerminated() {
+                let thisCall = VideoChatCallLog.findOne({
+                    _id: Session.get("currentPhoneCall")
+                });
+                if (thisCall.status == "A")
+                    VideoChatCallLog.update({
+                        _id: Session.get("currentPhoneCall")
+                    }, {
+                        $set: {
+                            status: Meteor.userId(),
+                            call_end_dt: new Date().getTime()
+                        }
+                    })
+                else if (thisCall.status == "R")
+                    if (Meteor.userId() == thisCall.callee_id) {
+                        window.VideoCallServices.stopRingtone();
+                        VideoChatCallLog.update({
+                            _id: Session.get("currentPhoneCall")
+                        }, {
+                            $set: {
+                                status: "D"
+                            }
+                        })
+                    }
+                    else {
+                        VideoChatCallLog.update({
+                            _id: Session.get("currentPhoneCall")
+                        }, {
+                            $set: {
+                                status: "CAN"
+                            }
+                        })
+                    }
             }
             /*
              *   Get the local webcam stream, using a polyfill for cross-browser compatibility
@@ -89,7 +129,7 @@ else if (Meteor.isClient) {
              *   Give the local stream an object reference and an HTML element to be displayed in
              *
              */
-        loadLocalWebcam(localVideoHTMLId) {
+        loadLocalWebcam(localVideoHTMLId, callback) {
             console.log(this);
             if (this.localVideoHTMLId == undefined) {
                 if (localVideoHTMLId == undefined)
@@ -103,6 +143,7 @@ else if (Meteor.isClient) {
                 localVideo.src = window.URL.createObjectURL(stream);
                 localVideo.muted = true;
                 localVideo.play();
+                if (callback) return callback();
             });
         }
         setLocalWebcam(localVideoHTMLId) {
@@ -269,19 +310,11 @@ else if (Meteor.isClient) {
                                 }
                             });
                         })
-
                 });
-
-
-
-
-
-            console.log("ice", Session.get("remoteIceCandidates"));
             Session.get("remoteIceCandidates").forEach(function(ice) {
                 window.VideoCallServices.peerConnection.addIceCandidate(
                     new RTCIceCandidate(ice));
             })
-
             if (events)
                 if (events.peerConnectionLoaded != undefined)
                     events.peerConnectionLoaded();
@@ -296,9 +329,7 @@ else if (Meteor.isClient) {
             if (events)
                 if (events.phoneSetStateAnswer != undefined)
                     events.phoneSetStateAnswer();
-
         }
-
     };
     window.VideoCallServices = VideoCallServices;
 }
@@ -320,9 +351,7 @@ if (Meteor.isServer) {
                 SDP_caller: "",
                 SDP_callee: "",
                 ice_caller: [],
-                ice_callee: [],
-                caller_con_result: "",
-                callee_con_result: ""
+                ice_callee: []
             });
         },
         'videoCall/calleeRecieved': function(data) {
