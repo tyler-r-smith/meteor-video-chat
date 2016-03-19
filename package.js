@@ -14,6 +14,7 @@ Package.onUse(function(api) {
   api.versionsFrom('1.2.1');
   api.use('ecmascript');
   api.use(['templating'], 'client');
+  api.use("simple:reactive-method");
   api.addFiles(['services/call.js', 'services/settings.js']);
   api.addFiles(['template.html', 'template.js'], 'client');
   api.addFiles('server.js', ['server'])
@@ -23,6 +24,7 @@ Package.onUse(function(api) {
 Package.onTest(function(api) {
   api.use('ecmascript');
   api.use('tinytest');
+  
   api.addFiles('video-chat-tests.js');
   api.export([]);
 });
