@@ -8,7 +8,7 @@ This package is under daily development and is currently volatile, it is possibl
 
 If you detect any errors or can suggest changes/features, ask me here [https://github.com/elmarti/meteor-video-chat/issues](https://github.com/elmarti/meteor-video-chat/issues)
 
-**TO USE WEBRTC IN CHROME YOUR SERVER HAVE A SECURE ORIGIN (SSL)**
+**TO USE WEBRTC IN CHROME YOUR SERVER MUST HAVE A SECURE ORIGIN (SSL)**
 **Find out more about using WebRTC on Chrome here:**  
 [https://developers.google.com/web/updates/2015/10/chrome-47-webrtc](https://developers.google.com/web/updates/2015/10/chrome-47-webrtc) 
 **Find out more about browser compatibility here:**  [http://iswebrtcreadyyet.com/](http://iswebrtcreadyyet.com/)
