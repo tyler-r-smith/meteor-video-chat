@@ -13,13 +13,12 @@ if (Meteor.isServer) {
             });
         }),
         validationLoop: Meteor.setInterval(function() {
-                console.log("validationLoop");
                 let finish = new Date().getTime();
                 VideoChatCallLog.find({
                     status: "C"
                 }).forEach(function(log) {
                     if (log.call_dt > finish + 30000) {
-                        console.log("C", log);
+                        console.log("Cancelling call", log);
 
                         VideoChatCallLog.update({
                             _id: log._id
@@ -63,48 +62,60 @@ else if (Meteor.isClient) {
     VideoCallServices = new class {
         constructor() {
             this.peerConnection = {};
-            this.ringtone = new Audio('http://178.62.110.73:3000/nokia.mp3');
-            this.ringtone.loop = true;
         }
+        onReceivePhoneCall() {
 
+        }
+        onCallTerminated() {
+
+        }
 
         /*
          *   Terminate the call, if the call was successful, it will be populated with the userId of the terminator. 
          *
          */
         callTerminated() {
-                let thisCall = VideoChatCallLog.findOne({
-                    _id: Session.get("currentPhoneCall")
-                });
-                if (thisCall.status == "A")
-                    VideoChatCallLog.update({
+                if (Session.get("currentPhoneCall")) {
+                    let thisCall = VideoChatCallLog.findOne({
                         _id: Session.get("currentPhoneCall")
-                    }, {
-                        $set: {
-                            status: Meteor.userId(),
-                            call_end_dt: new Date().getTime()
+                    });
+                    if (thisCall.status == "A")
+                        VideoChatCallLog.update({
+                            _id: Session.get("currentPhoneCall")
+                        }, {
+                            $set: {
+                                status: Meteor.userId(),
+                                call_end_dt: new Date().getTime()
+                            }
+                        })
+                    else if (thisCall.status == "R")
+                        if (Meteor.userId() == thisCall.callee_id) {
+                            window.VideoCallServices.stopRingtone();
+                            VideoChatCallLog.update({
+                                _id: Session.get("currentPhoneCall")
+                            }, {
+                                $set: {
+                                    status: "D"
+                                }
+                            })
                         }
-                    })
-                else if (thisCall.status == "R")
-                    if (Meteor.userId() == thisCall.callee_id) {
-                        window.VideoCallServices.stopRingtone();
-                        VideoChatCallLog.update({
-                            _id: Session.get("currentPhoneCall")
-                        }, {
-                            $set: {
-                                status: "D"
-                            }
-                        })
-                    }
-                    else {
-                        VideoChatCallLog.update({
-                            _id: Session.get("currentPhoneCall")
-                        }, {
-                            $set: {
-                                status: "CAN"
-                            }
-                        })
-                    }
+                        else {
+                            VideoChatCallLog.update({
+                                _id: Session.get("currentPhoneCall")
+                            }, {
+                                $set: {
+                                    status: "CAN"
+                                }
+                            })
+                        }
+                    window.VideoCallServices.peerConnection.close()
+                    window.localStream.stop();
+                    window.VideoCallServices.peerConnection = {};
+                }
+
+                Session.set("currentPhoneCall", null);
+                Session.set("remoteIceCandidates", []);
+                this.onCallTerminated();
             }
             /*
              *   Get the local webcam stream, using a polyfill for cross-browser compatibility
@@ -117,7 +128,8 @@ else if (Meteor.isClient) {
                     audio: true
                 }, function(stream) {
                     window.VideoCallServices._loadRTCConnection();
-                    window.VideoCallServices.peerConnection.addStream(stream)
+                    window.localStream = stream;
+                    window.VideoCallServices.peerConnection.addStream(window.localStream);
                     return callback(stream);
                 }, function() {});
             }
@@ -129,14 +141,9 @@ else if (Meteor.isClient) {
              *   Give the local stream an object reference and an HTML element to be displayed in
              *
              */
-        loadLocalWebcam(localVideoHTMLId, callback) {
-            console.log(this);
-            if (this.localVideoHTMLId == undefined) {
-                if (localVideoHTMLId == undefined)
-                    throw new Meteor.error(500, "Please initialize a local video HTML ID in parameters, or using setLocalWebcam()");
-            }
-            else
-                localVideoHTMLId = this.localVideoHTMLId;
+        loadLocalWebcam(callback) {
+
+            let localVideoHTMLId = this.localVideoHTMLId;
             this._getWebcam(function(stream) {
                 let localVideo = document.getElementById(localVideoHTMLId);
                 console.log(this);
@@ -235,13 +242,20 @@ else if (Meteor.isClient) {
                 video.play();
             };
         }
+        setRingtone(ringtoneUrl) {
+            this.ringtone = new Audio(ringtoneUrl);
+            this.ringtone.loop = true;
+        }
         startRingtone() {
-            if (this.ringtone.paused)
+            console.log("startringtone", this);
+            if (this.ringtone != undefined)
                 this.ringtone.play();
             Session.set("phoneIsRinging", true);
         }
         stopRingtone() {
-            if (!this.ringtone.paused)
+            
+            console.log("stopringtone", this);
+            if (this.ringtone != undefined)
                 this.ringtone.pause();
             Session.set("phoneIsRinging", false);
         }

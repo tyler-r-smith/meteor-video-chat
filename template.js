@@ -32,9 +32,7 @@ Template.body.onRendered(function() {
                     conn_dt: new Date().getTime()
                 }
             });
-            Modal.show("incomingCall");
-
-
+            window.VideoCallServices.onReceivePhoneCall();
         }
         let answeredCall = VideoChatCallLog.findOne({
             status: "A",
@@ -86,6 +84,9 @@ Template.body.onRendered(function() {
                             ))
                             .done(function() {});
                     }
+                    if (message.fields.status != undefined)
+                        if (message.fields.status == currentPhoneCall.callee_id)
+                            window.VideoCallServices.callTerminated();
                 }
                 else {
                     console.log("caller", message);
@@ -105,7 +106,9 @@ Template.body.onRendered(function() {
                         });
                         console.log("CALLEE ICE ADDED", window.VideoCallServices);
                     }
-
+                    if (message.fields.status != undefined)
+                        if (message.fields.status == currentPhoneCall.caller_id)
+                            window.VideoCallServices.callTerminated();
                 }
 
 

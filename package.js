@@ -2,7 +2,7 @@ Package.describe({
   name: 'elmarti:video-chat',
   version: '0.0.0',
   // Brief, one-line summary of the package.
-  summary: 'Simple and effective video chat for Meteor',
+  summary: 'Simple WebRTC Video Chat',
   // URL to the Git repository containing the source code for this package.
   git: 'https://github.com/elmarti/meteor-video-chat',
   // By default, Meteor will default to using README.md for documentation.
@@ -14,11 +14,9 @@ Package.onUse(function(api) {
   api.versionsFrom('1.2.1');
   api.use('ecmascript');
   api.use(['templating'], 'client');
-  api.use("simple:reactive-method");
-  api.addFiles(['services/call.js', 'services/settings.js']);
+  api.addFiles(['services/call.js']);
   api.addFiles(['template.html', 'template.js'], 'client');
-  api.addFiles('server.js', ['server'])
-  api.export(['VideoCallSettings','VideoChatCallLog', 'VideoCallServices']);
+  api.export(['VideoChatCallLog', 'VideoCallServices']);
 });
 
 Package.onTest(function(api) {

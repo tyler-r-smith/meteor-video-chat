@@ -1,1 +1,0 @@
-VideoChatCallLog = new Mongo.Collection("VideoChatCallLog");
