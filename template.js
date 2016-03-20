@@ -21,9 +21,13 @@ Template.body.onRendered(function() {
             callee_id: Meteor.userId()
         });
         if (newIncomingCall) {
+            Session.set("localIceCandidates", []);
+            Session.set("addedIceCandidates", null)
             console.log("incoming call")
             Session.set("currentPhoneCall", newIncomingCall._id);
             window.VideoCallServices.startRingtone();
+            window.VideoCallServices._loadRTCConnection();
+            window.VideoCallServices._setUpCalleeEvents()
             VideoChatCallLog.update({
                 _id: newIncomingCall._id
             }, {
@@ -62,20 +66,10 @@ Template.body.onRendered(function() {
                         console.log("ice callee", message.fields);
                         let iceCallees = message.fields.ice_callee;
                         iceCallees.forEach(function(ice) {
-                            let used = false;
-                            let remoteIceCandidates = Session.get("remoteIceCandidates");
-                            for (let i = 0; i < remoteIceCandidates.length; i++) {
-                                if (ice.candidate == remoteIceCandidates[i])
-                                    used = true;
-                            }
-                            if (!used) {
-                                console.log("not used")
-                                window.VideoCallServices.peerConnection.addIceCandidate(
-                                    new RTCIceCandidate(ice));
-                                remoteIceCandidates.push(ice.candidate);
-                                Session.set("remoteIceCandidates", remoteIceCandidates);
-                            }
+                            window.VideoCallServices.peerConnection.addIceCandidate(
+                                new RTCIceCandidate(ice));
                         });
+
                     }
                     if (message.fields.SDP_callee != undefined) {
                         console.log("sdp_callee");
@@ -84,32 +78,51 @@ Template.body.onRendered(function() {
                             ))
                             .done(function() {});
                     }
-                    if (message.fields.status != undefined)
+                    if (message.fields.status != undefined) {
                         if (message.fields.status == currentPhoneCall.callee_id)
                             window.VideoCallServices.callTerminated();
+                        if (message.fields.status == "CAN")
+                            window.VideoCallServices.callTerminated();
+                        if (message.fields.status == "A") {
+                            window.VideoCallServices._createLocalOffer();
+                            window.VideoCallServices._setUpCallerEvents()
+                        }
+                    }
                 }
                 else {
-                    console.log("caller", message);
-                    if (message.fields.ice_caller != undefined) {
-                        let iceCalleers = message.fields.ice_caller;
-                        iceCalleers.forEach(function(ice) {
-                            let used = false;
-                            let remoteIceCandidates = Session.get("remoteIceCandidates");
-                            for (let i = 0; i < remoteIceCandidates.length; i++) {
-                                if (ice.candidate == remoteIceCandidates[i].candidate)
-                                    used = true;
-                            }
-                            if (!used) {
-                                remoteIceCandidates.push(ice);
-                                Session.set("remoteIceCandidates", remoteIceCandidates);
-                            }
-                        });
-                        console.log("CALLEE ICE ADDED", window.VideoCallServices);
-                    }
+
                     if (message.fields.status != undefined)
                         if (message.fields.status == currentPhoneCall.caller_id)
                             window.VideoCallServices.callTerminated();
+                    if (message.fields.SDP_caller != undefined) {
+                        window.VideoCallServices.peerConnection.setRemoteDescription(new RTCSessionDescription(
+                                JSON.parse(message.fields.SDP_caller)
+                            ))
+                            .done(function() {
+                                window.VideoCallServices.peerConnection.createAnswer()
+                                    .done(function(answer) {
+                                        window.VideoCallServices.peerConnection.setLocalDescription(answer);
+                                        VideoChatCallLog.update({
+                                            _id: Session.get("currentPhoneCall")
+                                        }, {
+                                            $set: {
+                                                SDP_callee: JSON.stringify(answer)
+                                            }
+                                        });
+                                    })
+                            });
+                    }
+                    if (message.fields.ice_caller != undefined) {
+                        let iceCallers = message.fields.ice_caller;
+                        for (let i = 0; i < iceCallers.length; i++) {
+                            let ice = iceCallers[i];
+                            console.log("loadingIce", ice);
+                            window.VideoCallServices.peerConnection.addIceCandidate(
+                                new RTCIceCandidate(ice));
+                        };
+                    }
                 }
+
 
 
             }

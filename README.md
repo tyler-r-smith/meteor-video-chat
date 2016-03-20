@@ -37,24 +37,24 @@ Initialize events in the client-side Meteor.startup.
 	    }
 
 ## Making a Call
-In this step we initialize the webcam and peer connection: 
+In this step we initialize the webcam. The first parameter specifies whether you would like to set up the peer connection, as this is called automatically by receiving a call. 
 
-    window.VideoCallServices.loadLocalWebcam();
+    window.VideoCallServices.loadLocalWebcam(false, callback);
 This function takes 2 parameters, the local video Id and a callback. 
 Next you must make the call: 
 
     window.VideoCallServices.callRemote(**meteor _id of the user you are calling**)
 If you are initializing the webcam and making a call in the same function block, it is best to call the `callRemote()` function from within the `loadLocalWebcam()` callback like so: 
 
-    window.VideoCallServices.loadLocalWebcam(undefined, function() {
+    window.VideoCallServices.loadLocalWebcam(true, function() {
       window.VideoCallServices.callRemote(**meteor _id of the user you are calling**)
     });
 ## Receiving a phone call
 A number of things happen when you receive a phone call: `onReceivePhoneCall()` function is called and the, if you set a ringtone, it will be set to play, a helper called "incomingPhoneCall" will be set to true and so will a session variable called "phoneIsRinging". 
 
-To answer a call, like before you must initialize the peer connection and webcam and then call the `answerCall()`function. 
+To answer a call, like before you must initialize the peer connection and webcam and then call the `answerCall()`function. The first parameter must be false. 
 
-        window.VideoCallServices.loadLocalWebcam(function() {
+        window.VideoCallServices.loadLocalWebcam(false, function() {
 	        window.VideoCallServices.answerCall()
 	    });
 Answer call stops the ringtone, sets the aforementioned helper/session variables to false and directs the caller and callee video streams to the appropriate `<video>` elements. 
@@ -72,4 +72,5 @@ This will call the same function for both users, which will be followed by the "
 
 ## Changelog
 
+ - 4:03GMT 20/03/2016 version 0.1.5 - Serious refactoring of connection process to decouple ICE exhange from call acceptance process. Additional parameter in loadLocalWebcam function to allow the user to specify whether they would like the function to initialize the RTCSession
  - 10:52GMT 20/03/2016 version 0.1.0 published

@@ -14,38 +14,56 @@ if (Meteor.isServer) {
         }),
         validationLoop: Meteor.setInterval(function() {
                 let finish = new Date().getTime();
+
+                //Handle user offline without connect
                 VideoChatCallLog.find({
                     status: "C"
                 }).forEach(function(log) {
-                    if (log.call_dt > finish + 30000) {
-                        console.log("Cancelling call", log);
-
-                        VideoChatCallLog.update({
-                            _id: log._id
+                    Meteor.users.find({
+                        $or: [{
+                            _id: log.caller_id
                         }, {
-                            $set: {
-                                call_end_dt: finish,
-                                status: "DNC"
-                            }
-                        })
-                    }
+                            _id: log.callee_id
+                        }]
+                    }).forEach(function(thisUser) {
+                        if (!thisUser.status.online)
+                            VideoChatCallLog.update({
+                                _id: log._id
+                            }, {
+                                $set: {
+                                    status: "DNC"
+                                }
+                            })
+                    })
                 });
-                VideoChatCallLog.find({
-                    status: "R"
-                }).forEach(function(log) {
 
-                    if (log.call_dt > finish + 30000) {
-                        console.log("R", log);
-                        VideoChatCallLog.update({
-                            _id: log._id
+                //handle call received and answered but user offline
+                VideoChatCallLog.find({
+                    $or: [{
+                        status: "R"
+                    }, {
+                        status: "A"
+                    }]
+
+                }).forEach(function(log) {
+                    Meteor.users.find({
+                        $or: [{
+                            _id: log.caller_id
                         }, {
-                            $set: {
-                                call_end_dt: finish,
-                                status: "M"
-                            }
-                        })
-                    }
-                })
+                            _id: log.callee_id
+                        }]
+                    }).forEach(function(thisUser) {
+                        if (!thisUser.status.online)
+                            VideoChatCallLog.update({
+                                _id: log._id
+                            }, {
+                                $set: {
+                                    status: "CAN"
+                                }
+                            })
+                    })
+                });
+
             },
             10000)
     };
@@ -121,13 +139,14 @@ else if (Meteor.isClient) {
              *   Get the local webcam stream, using a polyfill for cross-browser compatibility
              *
              */
-        _getWebcam(callback) {
+        _getWebcam(loadPeer, callback) {
                 navigator.polyfillGetWebcam = (navigator.getUserMedia || navigator.webkitGetUserMedia || navigator.mozGetUserMedia || navigator.msGetUserMedia || navigator.mediaDevices.getUserMedia);
                 navigator.polyfillGetWebcam({
                     video: true,
                     audio: true
                 }, function(stream) {
-                    window.VideoCallServices._loadRTCConnection();
+                    if (loadPeer)
+                        window.VideoCallServices._loadRTCConnection();
                     window.localStream = stream;
                     window.VideoCallServices.peerConnection.addStream(window.localStream);
                     return callback(stream);
@@ -141,10 +160,9 @@ else if (Meteor.isClient) {
              *   Give the local stream an object reference and an HTML element to be displayed in
              *
              */
-        loadLocalWebcam(callback) {
-
+        loadLocalWebcam(loadPeer, callback) {
             let localVideoHTMLId = this.localVideoHTMLId;
-            this._getWebcam(function(stream) {
+            this._getWebcam(loadPeer, function(stream) {
                 let localVideo = document.getElementById(localVideoHTMLId);
                 console.log(this);
                 localVideo.src = window.URL.createObjectURL(stream);
@@ -194,16 +212,21 @@ else if (Meteor.isClient) {
         _setUpCallerEvents() {
                 this.peerConnection.onicecandidate = function(event) {
                     console.log(event.candidate);
-                    if (event.candidate)
+                    if (event.candidate) {
+                        let iceCandidates = Session.get("localIceCandidates");
+                        iceCandidates.push({
+                            candidate: event.candidate.candidate,
+                            id: event.candidate.sdpMid,
+                            label: event.candidate.sdpMLineIndex
+                        })
+                        Session.set("localIceCandidates", iceCandidates);
+                    }
+                    else
                         VideoChatCallLog.update({
                             _id: Session.get("currentPhoneCall")
                         }, {
-                            $push: {
-                                ice_caller: {
-                                    candidate: event.candidate.candidate,
-                                    id: event.candidate.sdpMid,
-                                    label: event.candidate.sdpMLineIndex
-                                }
+                            $set: {
+                                ice_caller: Session.get("localIceCandidates")
                             }
                         })
                 }
@@ -221,19 +244,24 @@ else if (Meteor.isClient) {
         _setUpCalleeEvents() {
             this.peerConnection.onicecandidate = function(event) {
                 console.log(event.candidate);
-                if (event.candidate)
+                if (event.candidate) {
+                    let iceCandidates = Session.get("localIceCandidates");
+                    iceCandidates.push({
+                        candidate: event.candidate.candidate,
+                        id: event.candidate.sdpMid,
+                        label: event.candidate.sdpMLineIndex
+                    })
+                    Session.set("localIceCandidates", iceCandidates);
+                }
+                else
                     VideoChatCallLog.update({
                         _id: Session.get("currentPhoneCall")
                     }, {
-                        $push: {
-                            ice_callee: {
-                                candidate: event.candidate.candidate,
-                                id: event.candidate.sdpMid,
-                                label: event.candidate.sdpMLineIndex
-                            }
+                        $set: {
+                            ice_callee: Session.get("localIceCandidates")
                         }
                     })
-            };
+            }
             this.peerConnection.onaddstream = function(event) {
                 console.log("addStream", event);
                 console.log(window.VideoCallServices.remoteVideoHTMLId);
@@ -253,7 +281,7 @@ else if (Meteor.isClient) {
             Session.set("phoneIsRinging", true);
         }
         stopRingtone() {
-            
+
             console.log("stopringtone", this);
             if (this.ringtone != undefined)
                 this.ringtone.pause();
@@ -264,7 +292,9 @@ else if (Meteor.isClient) {
          *   Call the remote user by their meteor ID
          *
          */
-        callRemote(remoteMeteorId, events) {
+        callRemote(remoteMeteorId) {
+                Session.set("localIceCandidates", []);
+
                 Session.set("currentPhoneCall", VideoChatCallLog.insert({
                     caller_id: Meteor.userId(),
                     call_dt: new Date().getTime(),
@@ -280,18 +310,6 @@ else if (Meteor.isClient) {
                     caller_con_result: "",
                     callee_con_result: ""
                 }))
-                if (events)
-                    if (events.created != undefined)
-                        events.created();
-                this._setUpCallerEvents()
-                if (events)
-                    if (events.setUpCallerEvents != undefined)
-                        events.setUpCallerEvents();
-                this._createLocalOffer();
-                if (events)
-                    if (events.localOfferCreated != undefined)
-                        events.localOfferCreated();
-
 
             }
             /*
@@ -299,39 +317,8 @@ else if (Meteor.isClient) {
              *
              */
         answerCall(events) {
+
             this.stopRingtone();
-            this._setUpCalleeEvents()
-            if (events)
-                if (events.setUpCallerEvents != undefined)
-                    events.setUpCallerEvents();
-                //   this._setLocalWebcam();
-            let callData = VideoChatCallLog.findOne({
-                _id: Session.get("currentPhoneCall")
-            });
-            console.log(callData);
-            this.peerConnection.setRemoteDescription(new RTCSessionDescription(
-                    JSON.parse(callData.SDP_caller)
-                ))
-                .done(function() {
-                    window.VideoCallServices.peerConnection.createAnswer()
-                        .done(function(answer) {
-                            window.VideoCallServices.peerConnection.setLocalDescription(answer);
-                            VideoChatCallLog.update({
-                                _id: Session.get("currentPhoneCall")
-                            }, {
-                                $set: {
-                                    SDP_callee: JSON.stringify(answer)
-                                }
-                            });
-                        })
-                });
-            Session.get("remoteIceCandidates").forEach(function(ice) {
-                window.VideoCallServices.peerConnection.addIceCandidate(
-                    new RTCIceCandidate(ice));
-            })
-            if (events)
-                if (events.peerConnectionLoaded != undefined)
-                    events.peerConnectionLoaded();
             VideoChatCallLog.update({
                 _id: Session.get("currentPhoneCall")
             }, {
@@ -340,9 +327,8 @@ else if (Meteor.isClient) {
                     status: "A"
                 }
             })
-            if (events)
-                if (events.phoneSetStateAnswer != undefined)
-                    events.phoneSetStateAnswer();
+
+
         }
     };
     window.VideoCallServices = VideoCallServices;

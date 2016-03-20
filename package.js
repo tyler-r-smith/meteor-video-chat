@@ -1,6 +1,6 @@
 Package.describe({
   name: 'elmarti:video-chat',
-  version: '0.1.4',
+  version: '0.1.5',
   // Brief, one-line summary of the package.
   summary: 'Simple WebRTC Video Chat',
   // URL to the Git repository containing the source code for this package.
@@ -13,6 +13,7 @@ Package.describe({
 Package.onUse(function(api) {
   api.versionsFrom('1.2.1');
   api.use('ecmascript');
+  api.use("mizzao:user-status");
   api.use(['templating'], 'client');
   api.addFiles(['services/call.js']);
   api.addFiles(['template.html', 'template.js'], 'client');
