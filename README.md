@@ -72,5 +72,5 @@ This will call the same function for both users, which will be followed by the "
 
 ## Changelog
 
- - 4:03GMT 20/03/2016 version 0.1.5 - Serious refactoring of connection process to decouple ICE exhange from call acceptance process. Additional parameter in loadLocalWebcam function to allow the user to specify whether they would like the function to initialize the RTCSession
+ - 16:03GMT 20/03/2016 version 0.1.5 - Serious refactoring of connection process to decouple ICE exhange from call acceptance process. Additional parameter in loadLocalWebcam function to allow the user to specify whether they would like the function to initialize the RTCSession
  - 10:52GMT 20/03/2016 version 0.1.0 published
