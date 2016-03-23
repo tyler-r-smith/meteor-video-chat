@@ -20,6 +20,14 @@ Before making a call you must initialize the HTML id of the `<video>` elements t
       Meteor.VideoCallServices.setLocalWebcam("videoChatCallerVideo");
       Meteor.VideoCallServices.setRemoteWebcam("videoChatAnswerVideo");
       
+You must also specify STUN and TURN servers. Here is a list of STUN/TURN servers, be careful because some havent given explicit permission to use them https://gist.github.com/yetithefoot/7592580
+See more about setting you own STUN and TURN servers here: https://www.webrtc-experiment.com/docs/TURN-server-installation-guide.html http://www.stunprotocol.org/
+      Meteor.VideoCallServices.STUNTURN = {"iceServers":[
+                                        {url:"stun:stun.example.com"},
+                                        {url: "turn:example.com",
+                                        credentional: "dave",
+                                        username:"test@dave.com"}]};
+      
 This could be done as you are making the call, in `Meteor.startup` or wherever you see fit.
 
 If you like, you can set a ringtone, which will play on loop when a call is received:
@@ -75,6 +83,7 @@ This will call the same function for both users, which will be followed by the "
  3. Add option to continue with only audio if latency is too high
 
 ## Changelog
+ - 16:15GMT 23/03/2016 Version 0.2.3 Removed hardcoded STUN/TURN servers, to be initialized on startup
  - 05:38GMT 23/03/2016 Version 0.2.2 Added call ignore function and onCallIgnored event
  - 04:08GMT 23/03/2016 version 0.2.1 Program is no longer called from window, but Meteor instead, as per usual development style
  - 01:10GMT 23/03/2016 version 0.1.7 Fixed and tested connection issues. Used for call from UK to China.
