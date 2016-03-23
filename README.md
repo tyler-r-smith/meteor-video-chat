@@ -35,6 +35,10 @@ Initialize events in the client-side Meteor.startup.
      Meteor.VideoCallServices.onCallTerminated = function(){
 		     //Code to be executed when the call has been ended by either user. 
 	    }
+	 Meteor.VideoCallServices.onCallIgnored = function(){
+		     //Code to be executed when the call has been ended by either user. 
+	    }
+	    
 
 ## Making a Call
 In this step we initialize the webcam. The first parameter specifies whether you would like to set up the peer connection, as this is called automatically by receiving a call. 
@@ -71,7 +75,8 @@ This will call the same function for both users, which will be followed by the "
  3. Add option to continue with only audio if latency is too high
 
 ## Changelog
- - 04:08GMT 23/03/2016 version 0.2.0 Program is no longer called from window, but Meteor instead, as per usual development style
+ - 05:38GMT 23/03/2016 Version 0.2.2 Added call ignore function and onCallIgnored event
+ - 04:08GMT 23/03/2016 version 0.2.1 Program is no longer called from window, but Meteor instead, as per usual development style
  - 01:10GMT 23/03/2016 version 0.1.7 Fixed and tested connection issues. Used for call from UK to China.
  - 16:03GMT 20/03/2016 version 0.1.5 Serious refactoring of connection process to decouple ICE exhange from call acceptance process. Additional parameter in loadLocalWebcam function to allow the user to specify whether they would like the function to initialize the RTCSession
  - 10:52GMT 20/03/2016 version 0.1.0 published

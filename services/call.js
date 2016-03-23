@@ -82,12 +82,14 @@ else if (Meteor.isClient) {
             this.peerConnection = {};
         }
         onReceivePhoneCall() {
-
+            
         }
         onCallTerminated() {
-
+            
         }
-
+        onCallIgnored(){
+            
+        }
         /*
          *   Terminate the call, if the call was successful, it will be populated with the userId of the terminator. 
          *
@@ -126,8 +128,9 @@ else if (Meteor.isClient) {
                                 }
                             })
                         }
-                    Meteor.VideoCallServices.peerConnection.close()
-                    Meteor.localStream.stop();
+                   try{ Meteor.VideoCallServices.peerConnection.close()}
+                   catch(e){}
+                    try{Meteor.localStream.stop();} catch(e){}
                     Meteor.VideoCallServices.peerConnection = {};
                 }
 
@@ -184,29 +187,31 @@ else if (Meteor.isClient) {
          */
         _loadRTCConnection() {
                 console.log(this);
-                this.peerConnection = new RTCPeerConnection({"iceServers":[{
-                    url: 'stun:stun.l.google.com:19302'
-                }, {
-                    url: 'stun:stun1.l.google.com:19302'
-                }, {
-                    url: 'stun:stun2.l.google.com:19302'
-                }, {
-                    url: 'stun:stun3.l.google.com:19302'
-                }, {
-                    url: 'stun:stun4.l.google.com:19302'
-                }, {
-                    url: 'turn:numb.viagenie.ca',
-                    credential: 'muazkh',
-                    username: 'webrtc@live.com'
-                }, {
-                    url: 'turn:192.158.29.39:3478?transport=udp',
-                    credential: 'JZEOEt2V3Qb0y27GRntt2u2PAYA=',
-                    username: '28224511:1379330808'
-                }, {
-                    url: 'turn:192.158.29.39:3478?transport=tcp',
-                    credential: 'JZEOEt2V3Qb0y27GRntt2u2PAYA=',
-                    username: '28224511:1379330808'
-                }]});
+                this.peerConnection = new RTCPeerConnection({
+                    "iceServers": [{
+                        url: 'stun:stun.l.google.com:19302'
+                    }, {
+                        url: 'stun:stun1.l.google.com:19302'
+                    }, {
+                        url: 'stun:stun2.l.google.com:19302'
+                    }, {
+                        url: 'stun:stun3.l.google.com:19302'
+                    }, {
+                        url: 'stun:stun4.l.google.com:19302'
+                    }, {
+                        url: 'turn:numb.viagenie.ca',
+                        credential: 'muazkh',
+                        username: 'webrtc@live.com'
+                    }, {
+                        url: 'turn:192.158.29.39:3478?transport=udp',
+                        credential: 'JZEOEt2V3Qb0y27GRntt2u2PAYA=',
+                        username: '28224511:1379330808'
+                    }, {
+                        url: 'turn:192.158.29.39:3478?transport=tcp',
+                        credential: 'JZEOEt2V3Qb0y27GRntt2u2PAYA=',
+                        username: '28224511:1379330808'
+                    }]
+                });
             }
             /*
              *   Create the local SDP offer and insert it into the database
@@ -350,8 +355,15 @@ else if (Meteor.isClient) {
                     status: "A"
                 }
             })
-
-
+        }
+        ignoreCall() {
+            VideoChatCallLog.update({
+                _id: Session.get("currentPhoneCall")
+            }, {
+                $set: {
+                    status: "IG"
+                }
+            })
         }
     };
     Meteor.VideoCallServices = VideoCallServices;

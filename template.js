@@ -47,6 +47,22 @@ Template.body.onRendered(function() {
             Session.set("inCall");
             Meteor.VideoCallServices.stopRingtone();
         }
+        let ignoredCall = VideoChatCallLog.findOne({
+            _id: Session.get("currentPhoneCall"),
+            caller_id: Meteor.userId(),
+            status: "IG"
+        });
+        if (ignoredCall)
+            Meteor.VideoCallServices.onCallIgnored();
+
+        let cancelledCall = VideoChatCallLog.findOne({
+            _id: Session.get("currentPhoneCall"),
+            status: "D"
+        })
+        if (cancelledCall)
+            Meteor.VideoCallServices.callTerminated();
+        if (Session.get("currentPhoneCall") == null)
+            Meteor.VideoCallServices.callTerminated();
     });
 
     /*
