@@ -17,52 +17,52 @@ Find out more about browser compatibility here:  [http://iswebrtcreadyyet.com/](
 ## Configuration
 Before making a call you must initialize the HTML id of the `<video>` elements that you would like to send the streams to like so: 
 
-      window.VideoCallServices.setLocalWebcam("videoChatCallerVideo");
-      window.VideoCallServices.setRemoteWebcam("videoChatAnswerVideo");
+      Meteor.VideoCallServices.setLocalWebcam("videoChatCallerVideo");
+      Meteor.VideoCallServices.setRemoteWebcam("videoChatAnswerVideo");
       
 This could be done as you are making the call, in `Meteor.startup` or wherever you see fit.
 
 If you like, you can set a ringtone, which will play on loop when a call is received:
 
-    window.VideoCallServices.setRingtone('/aRingtone.mp3');
+    Meteor.VideoCallServices.setRingtone('/aRingtone.mp3');
 
 ## Events
 Initialize events in the client-side Meteor.startup.
 
-     window.VideoCallServices.onReceivePhoneCall = function(){
+     Meteor.VideoCallServices.onReceivePhoneCall = function(){
     	     //Code to be executed when a call is received
         }
-     window.VideoCallServices.onCallTerminated = function(){
+     Meteor.VideoCallServices.onCallTerminated = function(){
 		     //Code to be executed when the call has been ended by either user. 
 	    }
 
 ## Making a Call
 In this step we initialize the webcam. The first parameter specifies whether you would like to set up the peer connection, as this is called automatically by receiving a call. 
 
-    window.VideoCallServices.loadLocalWebcam(false, callback);
+    Meteor.VideoCallServices.loadLocalWebcam(false, callback);
 This function takes 2 parameters, the local video Id and a callback. 
 Next you must make the call: 
 
-    window.VideoCallServices.callRemote(**meteor _id of the user you are calling**)
+    Meteor.VideoCallServices.callRemote(**meteor _id of the user you are calling**)
 If you are initializing the webcam and making a call in the same function block, it is best to call the `callRemote()` function from within the `loadLocalWebcam()` callback like so: 
 
-    window.VideoCallServices.loadLocalWebcam(true, function() {
-      window.VideoCallServices.callRemote(**meteor _id of the user you are calling**)
+    Meteor.VideoCallServices.loadLocalWebcam(true, function() {
+      Meteor.VideoCallServices.callRemote(**meteor _id of the user you are calling**)
     });
 ## Receiving a phone call
 A number of things happen when you receive a phone call: `onReceivePhoneCall()` function is called and the, if you set a ringtone, it will be set to play, a helper called "incomingPhoneCall" will be set to true and so will a session variable called "phoneIsRinging". 
 
 To answer a call, like before you must initialize the peer connection and webcam and then call the `answerCall()`function. The first parameter must be false. 
 
-        window.VideoCallServices.loadLocalWebcam(false, function() {
-	        window.VideoCallServices.answerCall()
+        Meteor.VideoCallServices.loadLocalWebcam(false, function() {
+	        Meteor.VideoCallServices.answerCall()
 	    });
 Answer call stops the ringtone, sets the aforementioned helper/session variables to false and directs the caller and callee video streams to the appropriate `<video>` elements. 
 
 ## Ending a call
 To end a call simply call the following function: 
 
-    window.VideoCallServices.callTerminated();
+    Meteor.VideoCallServices.callTerminated();
 This will call the same function for both users, which will be followed by the "onCallTerminated" event. 
 
 ## TODO
@@ -71,6 +71,7 @@ This will call the same function for both users, which will be followed by the "
  3. Add option to continue with only audio if latency is too high
 
 ## Changelog
+ - 04:08GMT 23/03/2016 version 0.2.0 Program is no longer called from window, but Meteor instead, as per usual development style
  - 01:10GMT 23/03/2016 version 0.1.7 Fixed and tested connection issues. Used for call from UK to China.
  - 16:03GMT 20/03/2016 version 0.1.5 Serious refactoring of connection process to decouple ICE exhange from call acceptance process. Additional parameter in loadLocalWebcam function to allow the user to specify whether they would like the function to initialize the RTCSession
  - 10:52GMT 20/03/2016 version 0.1.0 published
