@@ -25,10 +25,10 @@ Template.body.onRendered(function() {
             Session.set("addedIceCandidates", null)
             console.log("incoming call")
             Session.set("currentPhoneCall", newIncomingCall._id);
-            window.VideoCallServices.startRingtone();
-            window.VideoCallServices._loadRTCConnection();
-            window.VideoCallServices._setUpCalleeEvents();
-            window.VideoCallServices._setUpMixedEvents();
+            Meteor.VideoCallServices.startRingtone();
+            Meteor.VideoCallServices._loadRTCConnection();
+            Meteor.VideoCallServices._setUpCalleeEvents();
+            Meteor.VideoCallServices._setUpMixedEvents();
             VideoChatCallLog.update({
                 _id: newIncomingCall._id
             }, {
@@ -37,7 +37,7 @@ Template.body.onRendered(function() {
                     conn_dt: new Date().getTime()
                 }
             });
-            window.VideoCallServices.onReceivePhoneCall();
+            Meteor.VideoCallServices.onReceivePhoneCall();
         }
         let answeredCall = VideoChatCallLog.findOne({
             status: "A",
@@ -45,7 +45,7 @@ Template.body.onRendered(function() {
         });
         if (answeredCall) {
             Session.set("inCall");
-            window.VideoCallServices.stopRingtone();
+            Meteor.VideoCallServices.stopRingtone();
         }
     });
 
@@ -70,7 +70,7 @@ Template.body.onRendered(function() {
                             let ice = iceCallers[i];
                             if (!ice.seen) {
                                 console.log("loadingIce", ice);
-                                window.VideoCallServices.peerConnection.addIceCandidate(
+                                Meteor.VideoCallServices.peerConnection.addIceCandidate(
                                     new RTCIceCandidate(JSON.parse(ice.string)));
                                 let query = {};
                                 query["ice_callee." + i] = {
@@ -91,20 +91,20 @@ Template.body.onRendered(function() {
                     }
                     if (message.fields.SDP_callee != undefined) {
                         console.log("sdp_callee");
-                        window.VideoCallServices.peerConnection.setRemoteDescription(new RTCSessionDescription(
+                        Meteor.VideoCallServices.peerConnection.setRemoteDescription(new RTCSessionDescription(
                                 JSON.parse(message.fields.SDP_callee)
                             ))
                             .done(function() {});
                     }
                     if (message.fields.status != undefined) {
                         if (message.fields.status == currentPhoneCall.callee_id)
-                            window.VideoCallServices.callTerminated();
+                            Meteor.VideoCallServices.callTerminated();
                         if (message.fields.status == "CAN")
-                            window.VideoCallServices.callTerminated();
+                            Meteor.VideoCallServices.callTerminated();
                         if (message.fields.status == "A") {
-                            window.VideoCallServices._createLocalOffer();
-                            window.VideoCallServices._setUpCallerEvents();
-                            window.VideoCallServices._setUpMixedEvents();
+                            Meteor.VideoCallServices._createLocalOffer();
+                            Meteor.VideoCallServices._setUpCallerEvents();
+                            Meteor.VideoCallServices._setUpMixedEvents();
                         }
                     }
                 }
@@ -112,15 +112,15 @@ Template.body.onRendered(function() {
 
                     if (message.fields.status != undefined)
                         if (message.fields.status == currentPhoneCall.caller_id)
-                            window.VideoCallServices.callTerminated();
+                            Meteor.VideoCallServices.callTerminated();
                     if (message.fields.SDP_caller != undefined) {
-                        window.VideoCallServices.peerConnection.setRemoteDescription(new RTCSessionDescription(
+                        Meteor.VideoCallServices.peerConnection.setRemoteDescription(new RTCSessionDescription(
                                 JSON.parse(message.fields.SDP_caller)
                             ))
                             .done(function() {
-                                window.VideoCallServices.peerConnection.createAnswer()
+                                Meteor.VideoCallServices.peerConnection.createAnswer()
                                     .done(function(answer) {
-                                        window.VideoCallServices.peerConnection.setLocalDescription(answer);
+                                        Meteor.VideoCallServices.peerConnection.setLocalDescription(answer);
                                         VideoChatCallLog.update({
                                             _id: Session.get("currentPhoneCall")
                                         }, {
@@ -137,7 +137,7 @@ Template.body.onRendered(function() {
                             let ice = iceCallers[i];
                             if (!ice.seen) {
                                 console.log("loadingIce", ice);
-                                window.VideoCallServices.peerConnection.addIceCandidate(
+                                Meteor.VideoCallServices.peerConnection.addIceCandidate(
                                     new RTCIceCandidate(JSON.parse(ice.string)));
                                 let query = {};
                                 query["ice_caller." + i] = {

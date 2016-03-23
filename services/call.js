@@ -108,7 +108,7 @@ else if (Meteor.isClient) {
                         })
                     else if (thisCall.status == "R")
                         if (Meteor.userId() == thisCall.callee_id) {
-                            window.VideoCallServices.stopRingtone();
+                            Meteor.VideoCallServices.stopRingtone();
                             VideoChatCallLog.update({
                                 _id: Session.get("currentPhoneCall")
                             }, {
@@ -126,9 +126,9 @@ else if (Meteor.isClient) {
                                 }
                             })
                         }
-                    window.VideoCallServices.peerConnection.close()
-                    window.localStream.stop();
-                    window.VideoCallServices.peerConnection = {};
+                    Meteor.VideoCallServices.peerConnection.close()
+                    Meteor.localStream.stop();
+                    Meteor.VideoCallServices.peerConnection = {};
                 }
 
                 Session.set("currentPhoneCall", null);
@@ -146,9 +146,9 @@ else if (Meteor.isClient) {
                     audio: true
                 }, function(stream) {
                     if (loadPeer)
-                        window.VideoCallServices._loadRTCConnection();
-                    window.localStream = stream;
-                    window.VideoCallServices.peerConnection.addStream(window.localStream);
+                        Meteor.VideoCallServices._loadRTCConnection();
+                    Meteor.localStream = stream;
+                    Meteor.VideoCallServices.peerConnection.addStream(Meteor.localStream);
                     return callback(stream);
                 }, function() {});
             }
@@ -165,7 +165,7 @@ else if (Meteor.isClient) {
             this._getWebcam(loadPeer, function(stream) {
                 let localVideo = document.getElementById(localVideoHTMLId);
                 console.log(this);
-                localVideo.src = window.URL.createObjectURL(stream);
+                localVideo.src = URL.createObjectURL(stream);
                 localVideo.muted = true;
                 localVideo.play();
                 if (callback) return callback();
@@ -213,7 +213,7 @@ else if (Meteor.isClient) {
              *
              */
         _createLocalOffer() {
-                window.VideoCallServices.peerConnection.createOffer().done(function(desc) {
+                Meteor.VideoCallServices.peerConnection.createOffer().done(function(desc) {
                     console.log("createOffer", desc);
                     console.log(Session.get("currentPhoneCall"));
                     console.log(VideoChatCallLog.update({
@@ -223,7 +223,7 @@ else if (Meteor.isClient) {
                             SDP_caller: JSON.stringify(desc)
                         }
                     }))
-                    window.VideoCallServices.peerConnection.setLocalDescription(desc);
+                    Meteor.VideoCallServices.peerConnection.setLocalDescription(desc);
 
                 })
             }
@@ -249,7 +249,7 @@ else if (Meteor.isClient) {
                 }
                 this.peerConnection.onaddstream = function(event) {
                     console.log("addStream", event);
-                    var video = document.getElementById(window.VideoCallServices.remoteVideoHTMLId);
+                    var video = document.getElementById(Meteor.VideoCallServices.remoteVideoHTMLId);
                     video.src = URL.createObjectURL(event.stream);
                     video.play();
                 };
@@ -278,8 +278,8 @@ else if (Meteor.isClient) {
             }
             this.peerConnection.onaddstream = function(event) {
                 console.log("addStream", event);
-                console.log(window.VideoCallServices.remoteVideoHTMLId);
-                var video = document.getElementById(window.VideoCallServices.remoteVideoHTMLId);
+                console.log(Meteor.VideoCallServices.remoteVideoHTMLId);
+                var video = document.getElementById(Meteor.VideoCallServices.remoteVideoHTMLId);
                 video.src = URL.createObjectURL(event.stream);
                 video.play();
             };
@@ -354,5 +354,5 @@ else if (Meteor.isClient) {
 
         }
     };
-    window.VideoCallServices = VideoCallServices;
+    Meteor.VideoCallServices = VideoCallServices;
 }
