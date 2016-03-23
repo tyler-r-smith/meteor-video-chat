@@ -184,7 +184,29 @@ else if (Meteor.isClient) {
          */
         _loadRTCConnection() {
                 console.log(this);
-                this.peerConnection = new RTCPeerConnection(STUNTURN);
+                this.peerConnection = new RTCPeerConnection({"iceServers":[{
+                    url: 'stun:stun.l.google.com:19302'
+                }, {
+                    url: 'stun:stun1.l.google.com:19302'
+                }, {
+                    url: 'stun:stun2.l.google.com:19302'
+                }, {
+                    url: 'stun:stun3.l.google.com:19302'
+                }, {
+                    url: 'stun:stun4.l.google.com:19302'
+                }, {
+                    url: 'turn:numb.viagenie.ca',
+                    credential: 'muazkh',
+                    username: 'webrtc@live.com'
+                }, {
+                    url: 'turn:192.158.29.39:3478?transport=udp',
+                    credential: 'JZEOEt2V3Qb0y27GRntt2u2PAYA=',
+                    username: '28224511:1379330808'
+                }, {
+                    url: 'turn:192.158.29.39:3478?transport=tcp',
+                    credential: 'JZEOEt2V3Qb0y27GRntt2u2PAYA=',
+                    username: '28224511:1379330808'
+                }]});
             }
             /*
              *   Create the local SDP offer and insert it into the database
@@ -213,22 +235,17 @@ else if (Meteor.isClient) {
                 this.peerConnection.onicecandidate = function(event) {
                     console.log(event.candidate);
                     if (event.candidate) {
-                        let iceCandidates = Session.get("localIceCandidates");
-                        iceCandidates.push({
-                            candidate: event.candidate.candidate,
-                            id: event.candidate.sdpMid,
-                            label: event.candidate.sdpMLineIndex
-                        })
-                        Session.set("localIceCandidates", iceCandidates);
-                    }
-                    else
                         VideoChatCallLog.update({
                             _id: Session.get("currentPhoneCall")
                         }, {
-                            $set: {
-                                ice_caller: Session.get("localIceCandidates")
+                            $push: {
+                                ice_caller: {
+                                    string: JSON.stringify(event.candidate),
+                                    seen: false
+                                }
                             }
                         })
+                    }
                 }
                 this.peerConnection.onaddstream = function(event) {
                     console.log("addStream", event);
@@ -245,22 +262,19 @@ else if (Meteor.isClient) {
             this.peerConnection.onicecandidate = function(event) {
                 console.log(event.candidate);
                 if (event.candidate) {
-                    let iceCandidates = Session.get("localIceCandidates");
-                    iceCandidates.push({
-                        candidate: event.candidate.candidate,
-                        id: event.candidate.sdpMid,
-                        label: event.candidate.sdpMLineIndex
-                    })
-                    Session.set("localIceCandidates", iceCandidates);
-                }
-                else
                     VideoChatCallLog.update({
                         _id: Session.get("currentPhoneCall")
                     }, {
-                        $set: {
-                            ice_callee: Session.get("localIceCandidates")
+                        $push: {
+                            ice_callee: {
+                                string: JSON.stringify(event.candidate),
+                                seen: false
+                            }
                         }
                     })
+                }
+
+
             }
             this.peerConnection.onaddstream = function(event) {
                 console.log("addStream", event);
@@ -269,6 +283,15 @@ else if (Meteor.isClient) {
                 video.src = URL.createObjectURL(event.stream);
                 video.play();
             };
+        }
+        _setUpMixedEvents() {
+            this.peerConnection.oniceconnectionstatechange = function(event) {
+                console.log("ice change", JSON.stringify(event));
+            }
+            this.peerConnection.onsignalingstatechange = function(event) {
+                console.log("state change", JSON.stringify(event));
+            };
+
         }
         setRingtone(ringtoneUrl) {
             this.ringtone = new Audio(ringtoneUrl);
@@ -333,81 +356,3 @@ else if (Meteor.isClient) {
     };
     window.VideoCallServices = VideoCallServices;
 }
-
-
-
-
-if (Meteor.isServer) {
-    Meteor.methods({
-        "videoCall/makeCall": function(data) {
-            return VideoChatCallLog.insert({
-                caller_id: Meteor.userId(),
-                call_dt: new Date().getTime(),
-                conn_dt: "",
-                call_start_dt: "",
-                call_end_dt: "",
-                status: "C",
-                callee_id: data.id,
-                SDP_caller: "",
-                SDP_callee: "",
-                ice_caller: [],
-                ice_callee: []
-            });
-        },
-        'videoCall/calleeRecieved': function(data) {
-
-        }
-    })
-}
-
-STUNTURN = [{
-    url: 'stun:stun01.sipphone.com'
-}, {
-    url: 'stun:stun.ekiga.net'
-}, {
-    url: 'stun:stun.fwdnet.net'
-}, {
-    url: 'stun:stun.ideasip.com'
-}, {
-    url: 'stun:stun.iptel.org'
-}, {
-    url: 'stun:stun.rixtelecom.se'
-}, {
-    url: 'stun:stun.schlund.de'
-}, {
-    url: 'stun:stun.l.google.com:19302'
-}, {
-    url: 'stun:stun1.l.google.com:19302'
-}, {
-    url: 'stun:stun2.l.google.com:19302'
-}, {
-    url: 'stun:stun3.l.google.com:19302'
-}, {
-    url: 'stun:stun4.l.google.com:19302'
-}, {
-    url: 'stun:stunserver.org'
-}, {
-    url: 'stun:stun.softjoys.com'
-}, {
-    url: 'stun:stun.voiparound.com'
-}, {
-    url: 'stun:stun.voipbuster.com'
-}, {
-    url: 'stun:stun.voipstunt.com'
-}, {
-    url: 'stun:stun.voxgratia.org'
-}, {
-    url: 'stun:stun.xten.com'
-}, {
-    url: 'turn:numb.viagenie.ca',
-    credential: 'muazkh',
-    username: 'webrtc@live.com'
-}, {
-    url: 'turn:192.158.29.39:3478?transport=udp',
-    credential: 'JZEOEt2V3Qb0y27GRntt2u2PAYA=',
-    username: '28224511:1379330808'
-}, {
-    url: 'turn:192.158.29.39:3478?transport=tcp',
-    credential: 'JZEOEt2V3Qb0y27GRntt2u2PAYA=',
-    username: '28224511:1379330808'
-}];

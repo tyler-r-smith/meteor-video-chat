@@ -27,7 +27,8 @@ Template.body.onRendered(function() {
             Session.set("currentPhoneCall", newIncomingCall._id);
             window.VideoCallServices.startRingtone();
             window.VideoCallServices._loadRTCConnection();
-            window.VideoCallServices._setUpCalleeEvents()
+            window.VideoCallServices._setUpCalleeEvents();
+            window.VideoCallServices._setUpMixedEvents();
             VideoChatCallLog.update({
                 _id: newIncomingCall._id
             }, {
@@ -64,11 +65,28 @@ Template.body.onRendered(function() {
                     console.log("caller", message);
                     if (message.fields.ice_callee != undefined) {
                         console.log("ice callee", message.fields);
-                        let iceCallees = message.fields.ice_callee;
-                        iceCallees.forEach(function(ice) {
-                            window.VideoCallServices.peerConnection.addIceCandidate(
-                                new RTCIceCandidate(ice));
-                        });
+                        let iceCallers = message.fields.ice_callee;
+                        for (let i = 0; i < iceCallers.length; i++) {
+                            let ice = iceCallers[i];
+                            if (!ice.seen) {
+                                console.log("loadingIce", ice);
+                                window.VideoCallServices.peerConnection.addIceCandidate(
+                                    new RTCIceCandidate(JSON.parse(ice.string)));
+                                let query = {};
+                                query["ice_callee." + i] = {
+                                    seen: true,
+                                    string: ice.string
+                                }
+                                console.log(query);
+                                VideoChatCallLog.update({
+                                    _id: Session.get("currentPhoneCall")
+                                }, {
+                                    $set: query
+                                })
+                            }
+
+
+                        };
 
                     }
                     if (message.fields.SDP_callee != undefined) {
@@ -85,7 +103,8 @@ Template.body.onRendered(function() {
                             window.VideoCallServices.callTerminated();
                         if (message.fields.status == "A") {
                             window.VideoCallServices._createLocalOffer();
-                            window.VideoCallServices._setUpCallerEvents()
+                            window.VideoCallServices._setUpCallerEvents();
+                            window.VideoCallServices._setUpMixedEvents();
                         }
                     }
                 }
@@ -116,9 +135,22 @@ Template.body.onRendered(function() {
                         let iceCallers = message.fields.ice_caller;
                         for (let i = 0; i < iceCallers.length; i++) {
                             let ice = iceCallers[i];
-                            console.log("loadingIce", ice);
-                            window.VideoCallServices.peerConnection.addIceCandidate(
-                                new RTCIceCandidate(ice));
+                            if (!ice.seen) {
+                                console.log("loadingIce", ice);
+                                window.VideoCallServices.peerConnection.addIceCandidate(
+                                    new RTCIceCandidate(JSON.parse(ice.string)));
+                                let query = {};
+                                query["ice_caller." + i] = {
+                                    seen: true,
+                                    string: ice.string
+                                }
+                                console.log(query);
+                                VideoChatCallLog.update({
+                                    _id: Session.get("currentPhoneCall")
+                                }, {
+                                    $set: query
+                                })
+                            }
                         };
                     }
                 }
