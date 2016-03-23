@@ -1,8 +1,8 @@
 Package.describe({
   name: 'elmarti:video-chat',
-  version: '0.1.7',
+  version: '0.2.0',
   // Brief, one-line summary of the package.
-  summary: 'Simple WebRTC Video Chat',
+  summary: 'Drop simple WebRTC Video Chat into your app.',
   // URL to the Git repository containing the source code for this package.
   git: 'https://github.com/elmarti/meteor-video-chat',
   // By default, Meteor will default to using README.md for documentation.
