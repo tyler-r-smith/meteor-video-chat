@@ -71,6 +71,6 @@ This will call the same function for both users, which will be followed by the "
  3. Add option to continue with only audio if latency is too high
 
 ## Changelog
-
- - 16:03GMT 20/03/2016 version 0.1.5 - Serious refactoring of connection process to decouple ICE exhange from call acceptance process. Additional parameter in loadLocalWebcam function to allow the user to specify whether they would like the function to initialize the RTCSession
+ - 01:10GMT 23/03/2016 version 0.1.7 Fixed and tested connection issues. Used for call from UK to China.
+ - 16:03GMT 20/03/2016 version 0.1.5 Serious refactoring of connection process to decouple ICE exhange from call acceptance process. Additional parameter in loadLocalWebcam function to allow the user to specify whether they would like the function to initialize the RTCSession
  - 10:52GMT 20/03/2016 version 0.1.0 published
