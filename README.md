@@ -22,6 +22,7 @@ Before making a call you must initialize the HTML id of the `<video>` elements t
       
 You must also specify STUN and TURN servers. Here is a list of STUN/TURN servers, be careful because some havent given explicit permission to use them https://gist.github.com/yetithefoot/7592580
 See more about setting you own STUN and TURN servers here: https://www.webrtc-experiment.com/docs/TURN-server-installation-guide.html http://www.stunprotocol.org/
+
       Meteor.VideoCallServices.STUNTURN = {"iceServers":[
                                         {url:"stun:stun.example.com"},
                                         {url: "turn:example.com",
