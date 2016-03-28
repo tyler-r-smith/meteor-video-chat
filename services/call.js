@@ -12,6 +12,10 @@ if (Meteor.isServer) {
                 }]
             });
         }),
+        /*
+        *    Loop to ensure that expired sessions are disposed of
+        *
+        */
         validationLoop: Meteor.setInterval(function() {
                 let finish = new Date().getTime();
 
@@ -67,6 +71,11 @@ if (Meteor.isServer) {
             },
             10000)
     };
+    /*
+    *   Allow users to update the connection data collection from the client side
+    *   In a stable release there will be greater control of the people who can edit this. 
+    *
+    */
     VideoChatCallLog.allow({
         update: function() {
             return true;
@@ -82,6 +91,7 @@ else if (Meteor.isClient) {
             this.peerConnection = {};
             this.STUNTURN = null;
         }
+        //The following 3 functions are events which can be overriden
         onReceivePhoneCall() {
             
         }
@@ -266,6 +276,10 @@ else if (Meteor.isClient) {
                 video.play();
             };
         }
+        /*
+        *   Set up the event handlers used by both caller and callee
+        *
+        */
         _setUpMixedEvents() {
             this.peerConnection.oniceconnectionstatechange = function(event) {
                 console.log("ice change", JSON.stringify(event));
@@ -275,18 +289,20 @@ else if (Meteor.isClient) {
             };
 
         }
+        // submit a url to set as the ringtone
         setRingtone(ringtoneUrl) {
             this.ringtone = new Audio(ringtoneUrl);
             this.ringtone.loop = true;
         }
+        //Make the ringtone play
         startRingtone() {
             console.log("startringtone", this);
             if (this.ringtone != undefined)
                 this.ringtone.play();
             Session.set("phoneIsRinging", true);
         }
+        //Stop it from playing
         stopRingtone() {
-
             console.log("stopringtone", this);
             if (this.ringtone != undefined)
                 this.ringtone.pause();
@@ -333,6 +349,7 @@ else if (Meteor.isClient) {
                 }
             })
         }
+        // this will trigger an event on the caller side
         ignoreCall() {
             VideoChatCallLog.update({
                 _id: Session.get("currentPhoneCall")

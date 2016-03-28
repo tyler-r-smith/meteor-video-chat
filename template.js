@@ -6,8 +6,6 @@ Template.body.onRendered(function() {
     Session.set("phoneIsRinging", false);
     Session.set("remoteIceCandidates", []);
     let self = this;
-    // log received messages
-
     /*
      *   Autorun is used to detect changes in the publication. 
      *   The functionality triggered by changes is used to devise as to 
@@ -100,10 +98,7 @@ Template.body.onRendered(function() {
                                     $set: query
                                 })
                             }
-
-
                         };
-
                     }
                     if (message.fields.SDP_callee != undefined) {
                         console.log("sdp_callee");
@@ -170,9 +165,6 @@ Template.body.onRendered(function() {
                         };
                     }
                 }
-
-
-
             }
         }
     });
