@@ -50,18 +50,19 @@ Initialize events in the client-side Meteor.startup.
 	    
 
 ## Making a Call
-In this step we initialize the webcam. The first parameter specifies whether you would like to set up the peer connection, as this is called automatically by receiving a call. 
 
-    Meteor.VideoCallServices.loadLocalWebcam(false, callback);
-This function takes 2 parameters, the local video Id and a callback. 
-Next you must make the call: 
-
-    Meteor.VideoCallServices.callRemote(**meteor _id of the user you are calling**)
 If you are initializing the webcam and making a call in the same function block, it is best to call the `callRemote()` function from within the `loadLocalWebcam()` callback like so: 
 
     Meteor.VideoCallServices.loadLocalWebcam(true, function() {
       Meteor.VideoCallServices.callRemote(**meteor _id of the user you are calling**)
     });
+    
+The first parameter specifies whether you would like to set up the peer connection, as this is called automatically by receiving a call. 
+
+    Meteor.VideoCallServices.loadLocalWebcam(false, callback);
+    
+Regardless of how you initialise it, the webcam stream will be available on Meteor.localStream
+    
 ## Receiving a phone call
 A number of things happen when you receive a phone call: `onReceivePhoneCall()` function is called and the, if you set a ringtone, it will be set to play, a helper called "incomingPhoneCall" will be set to true and so will a session variable called "phoneIsRinging". 
 
