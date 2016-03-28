@@ -26,7 +26,7 @@ See more about setting you own STUN and TURN servers here: https://www.webrtc-ex
       Meteor.VideoCallServices.STUNTURN = {"iceServers":[
                                         {url:"stun:stun.example.com"},
                                         {url: "turn:example.com",
-                                        credentional: "dave",
+                                        credential: "dave",
                                         username:"test@dave.com"}]};
       
 This could be done as you are making the call, in `Meteor.startup` or wherever you see fit.
