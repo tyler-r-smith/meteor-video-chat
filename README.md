@@ -35,6 +35,9 @@ If you like, you can set a ringtone, which will play on loop when a call is rece
 
     Meteor.VideoCallServices.setRingtone('/aRingtone.mp3');
 
+By default, when it has not been possible to connect, the program will try 10 times to negotiate a connection. You can override it using the following:
+
+    Meteor.VideoCallServices.connectionRetryLimit = 10; 
 ## Events
 Initialize events in the client-side Meteor.startup.
 

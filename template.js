@@ -59,6 +59,30 @@ Template.body.onRendered(function() {
         })
         if (cancelledCall)
             Meteor.VideoCallServices.callTerminated();
+        let iceFailed = VideoChatCallLog.findOne({
+            _id: Session.get("currentPhoneCall"),
+            status: "IF",
+            callee_id: Meteor.userId()
+        })
+        if (iceFailed) {
+            Meteor.VideoCallServices._loadRTCConnection();
+            Meteor.VideoCallServices._setUpCalleeEvents();
+            Meteor.VideoCallServices._setUpMixedEvents();
+            Meteor.VideoCallServices.peerConnection.addStream(Meteor.localStream);
+            VideoChatCallLog.update({
+                _id: Session.get("currentPhoneCall")
+            }, {
+                $set: {
+                    status: "IRS"
+                }
+            })
+        }
+        let callFailed = VideoChatCallLog.findOne({
+            _id: Session.get("currentPhoneCall"),
+            status: "F"
+        })
+        if (callFailed)
+            Meteor.VideoCallServices.callTerminated();
         if (Session.get("currentPhoneCall") == null)
             Meteor.VideoCallServices.callTerminated();
     });
@@ -116,6 +140,13 @@ Template.body.onRendered(function() {
                             Meteor.VideoCallServices._createLocalOffer();
                             Meteor.VideoCallServices._setUpCallerEvents();
                             Meteor.VideoCallServices._setUpMixedEvents();
+                        }
+                        if (message.fields.status == "IRS") {
+                            Meteor.VideoCallServices._loadRTCConnection();
+                            Meteor.VideoCallServices._createLocalOffer();
+                            Meteor.VideoCallServices._setUpCallerEvents();
+                            Meteor.VideoCallServices._setUpMixedEvents();
+                            Meteor.VideoCallServices.peerConnection.addStream(Meteor.localStream);
                         }
                     }
                 }

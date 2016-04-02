@@ -13,9 +13,9 @@ if (Meteor.isServer) {
             });
         }),
         /*
-        *    Loop to ensure that expired sessions are disposed of
-        *
-        */
+         *    Loop to ensure that expired sessions are disposed of
+         *
+         */
         validationLoop: Meteor.setInterval(function() {
                 let finish = new Date().getTime();
 
@@ -72,10 +72,10 @@ if (Meteor.isServer) {
             10000)
     };
     /*
-    *   Allow users to update the connection data collection from the client side
-    *   In a stable release there will be greater control of the people who can edit this. 
-    *
-    */
+     *   Allow users to update the connection data collection from the client side
+     *   In a stable release there will be greater control of the people who can edit this. 
+     *
+     */
     VideoChatCallLog.allow({
         update: function() {
             return true;
@@ -88,23 +88,24 @@ if (Meteor.isServer) {
 else if (Meteor.isClient) {
     VideoCallServices = new class {
         constructor() {
-            this.peerConnection = {};
-            this.STUNTURN = null;
-        }
-        //The following 3 functions are events which can be overriden
+                this.peerConnection = {};
+                this.STUNTURN = null;
+                this.connectionRetryLimit = 10;
+            }
+            //The following 3 functions are events which can be overriden
         onReceivePhoneCall() {
-            
+
         }
         onCallTerminated() {
-            
+
         }
-        onCallIgnored(){
-            
-        }
-        /*
-         *   Terminate the call, if the call was successful, it will be populated with the userId of the terminator. 
-         *
-         */
+        onCallIgnored() {
+
+            }
+            /*
+             *   Terminate the call, if the call was successful, it will be populated with the userId of the terminator. 
+             *
+             */
         callTerminated() {
                 if (Session.get("currentPhoneCall")) {
                     let thisCall = VideoChatCallLog.findOne({
@@ -139,9 +140,14 @@ else if (Meteor.isClient) {
                                 }
                             })
                         }
-                   try{ Meteor.VideoCallServices.peerConnection.close()}
-                   catch(e){}
-                    try{Meteor.localStream.stop();} catch(e){}
+                    try {
+                        Meteor.VideoCallServices.peerConnection.close()
+                    }
+                    catch (e) {}
+                    try {
+                        Meteor.localStream.stop();
+                    }
+                    catch (e) {}
                     Meteor.VideoCallServices.peerConnection = {};
                 }
 
@@ -224,6 +230,42 @@ else if (Meteor.isClient) {
              *
              */
         _setUpCallerEvents() {
+                this.peerConnection.oniceconnectionstatechange = function(event) {
+                      console.log(Meteor.VideoCallServices.peerConnection.iceConnectionState);
+                      let pc = Meteor.VideoCallServices.peerConnection;
+                      Meteor.VideoCallServices.peerConnection.getStats().done(function(dave, steve){
+                          console.log("lol", dave, steve, this);
+                      })
+                  
+                      if(pc.iceConnectionState =="failed"){
+                       let currentSession = VideoChatCallLog.findOne({
+                            _id: Session.get("currentPhoneCall")
+                        });
+                        if (currentSession.connection_retry_count <= Meteor.VideoCallServices.connectionRetryLimit) {
+                            VideoChatCallLog.update({
+                                _id: Session.get("currentPhoneCall")
+                            }, {
+                                $set: {
+                                    status: "IF"
+                                },
+
+                                $inc: {
+                                    connection_retry_count: 1
+                                }
+                            })
+                        }
+                        else
+                            VideoCallChatLog.update({
+                                _id: Session.get("currentUser")
+                            }, {
+                                $set: {
+                                    status: "F"
+                                }
+                            });
+                    }
+
+                  console.log("iceChange");
+                }
                 this.peerConnection.onicecandidate = function(event) {
                     console.log(event.candidate);
                     if (event.candidate) {
@@ -251,57 +293,55 @@ else if (Meteor.isClient) {
              * 
              */
         _setUpCalleeEvents() {
-            this.peerConnection.onicecandidate = function(event) {
-                console.log(event.candidate);
-                if (event.candidate) {
-                    VideoChatCallLog.update({
-                        _id: Session.get("currentPhoneCall")
-                    }, {
-                        $push: {
-                            ice_callee: {
-                                string: JSON.stringify(event.candidate),
-                                seen: false
+                this.peerConnection.onicecandidate = function(event) {
+                    console.log(event.candidate);
+                    if (event.candidate) {
+                        VideoChatCallLog.update({
+                            _id: Session.get("currentPhoneCall")
+                        }, {
+                            $push: {
+                                ice_callee: {
+                                    string: JSON.stringify(event.candidate),
+                                    seen: false
+                                }
                             }
-                        }
-                    })
+                        })
+                    }
+
+
                 }
-
-
+                this.peerConnection.onaddstream = function(event) {
+                    console.log("addStream", event);
+                    console.log(Meteor.VideoCallServices.remoteVideoHTMLId);
+                    var video = document.getElementById(Meteor.VideoCallServices.remoteVideoHTMLId);
+                    video.src = URL.createObjectURL(event.stream);
+                    video.play();
+                };
             }
-            this.peerConnection.onaddstream = function(event) {
-                console.log("addStream", event);
-                console.log(Meteor.VideoCallServices.remoteVideoHTMLId);
-                var video = document.getElementById(Meteor.VideoCallServices.remoteVideoHTMLId);
-                video.src = URL.createObjectURL(event.stream);
-                video.play();
-            };
-        }
-        /*
-        *   Set up the event handlers used by both caller and callee
-        *
-        */
+            /*
+             *   Set up the event handlers used by both caller and callee
+             *
+             */
         _setUpMixedEvents() {
-            this.peerConnection.oniceconnectionstatechange = function(event) {
-                console.log("ice change", JSON.stringify(event));
-            }
-            this.peerConnection.onsignalingstatechange = function(event) {
-                console.log("state change", JSON.stringify(event));
-            };
 
-        }
-        // submit a url to set as the ringtone
+                this.peerConnection.onsignalingstatechange = function(event) {
+                    console.log("state change", JSON.stringify(event));
+                };
+
+            }
+            // submit a url to set as the ringtone
         setRingtone(ringtoneUrl) {
-            this.ringtone = new Audio(ringtoneUrl);
-            this.ringtone.loop = true;
-        }
-        //Make the ringtone play
+                this.ringtone = new Audio(ringtoneUrl);
+                this.ringtone.loop = true;
+            }
+            //Make the ringtone play
         startRingtone() {
-            console.log("startringtone", this);
-            if (this.ringtone != undefined)
-                this.ringtone.play();
-            Session.set("phoneIsRinging", true);
-        }
-        //Stop it from playing
+                console.log("startringtone", this);
+                if (this.ringtone != undefined)
+                    this.ringtone.play();
+                Session.set("phoneIsRinging", true);
+            }
+            //Stop it from playing
         stopRingtone() {
             console.log("stopringtone", this);
             if (this.ringtone != undefined)
@@ -329,7 +369,8 @@ else if (Meteor.isClient) {
                     ice_caller: [],
                     ice_callee: [],
                     caller_con_result: "",
-                    callee_con_result: ""
+                    callee_con_result: "",
+                    connection_retry_count: 0
                 }))
 
             }
@@ -339,17 +380,17 @@ else if (Meteor.isClient) {
              */
         answerCall(events) {
 
-            this.stopRingtone();
-            VideoChatCallLog.update({
-                _id: Session.get("currentPhoneCall")
-            }, {
-                $set: {
-                    call_start_dt: new Date().getTime(),
-                    status: "A"
-                }
-            })
-        }
-        // this will trigger an event on the caller side
+                this.stopRingtone();
+                VideoChatCallLog.update({
+                    _id: Session.get("currentPhoneCall")
+                }, {
+                    $set: {
+                        call_start_dt: new Date().getTime(),
+                        status: "A"
+                    }
+                })
+            }
+            // this will trigger an event on the caller side
         ignoreCall() {
             VideoChatCallLog.update({
                 _id: Session.get("currentPhoneCall")
