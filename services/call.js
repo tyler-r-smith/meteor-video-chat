@@ -233,10 +233,6 @@ else if (Meteor.isClient) {
                 this.peerConnection.oniceconnectionstatechange = function(event) {
                       console.log(Meteor.VideoCallServices.peerConnection.iceConnectionState);
                       let pc = Meteor.VideoCallServices.peerConnection;
-                      Meteor.VideoCallServices.peerConnection.getStats().done(function(dave, steve){
-                          console.log("lol", dave, steve, this);
-                      })
-                  
                       if(pc.iceConnectionState =="failed"){
                        let currentSession = VideoChatCallLog.findOne({
                             _id: Session.get("currentPhoneCall")
@@ -246,7 +242,9 @@ else if (Meteor.isClient) {
                                 _id: Session.get("currentPhoneCall")
                             }, {
                                 $set: {
-                                    status: "IF"
+                                    status: "IF",
+                                    ice_caller:[],
+                                    ice_callee:[]
                                 },
 
                                 $inc: {
@@ -255,8 +253,8 @@ else if (Meteor.isClient) {
                             })
                         }
                         else
-                            VideoCallChatLog.update({
-                                _id: Session.get("currentUser")
+                            VideoChatCallLog.update({
+                                _id: Session.get("currentPhoneCall")
                             }, {
                                 $set: {
                                     status: "F"
