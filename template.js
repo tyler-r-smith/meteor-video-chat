@@ -5,6 +5,8 @@ Template.body.onRendered(function() {
     Session.set("currentPhoneCall", null);
     Session.set("phoneIsRinging", false);
     Session.set("remoteIceCandidates", []);
+    Session.set("callState", null);
+    Session.set("")
     let self = this;
     /*
      *   Autorun is used to detect changes in the publication. 
@@ -22,6 +24,13 @@ Template.body.onRendered(function() {
             Session.set("localIceCandidates", []);
             Session.set("addedIceCandidates", null)
             console.log("incoming call")
+            Session.set("callState", {
+                message: "Received Call",
+                status: "R",
+                caller: newIncomingCall.caller_id,
+                callee: newIncomingCall.callee_id,
+                timestamp: new Date()
+            });
             Session.set("currentPhoneCall", newIncomingCall._id);
             Meteor.VideoCallServices.startRingtone();
             Meteor.VideoCallServices._loadRTCConnection();
@@ -44,24 +53,49 @@ Template.body.onRendered(function() {
         if (answeredCall) {
             Session.set("inCall");
             Meteor.VideoCallServices.stopRingtone();
+            Session.set("callState", {
+                message: "Answered",
+                status: "A",
+                caller: answeredCall.caller_id,
+                callee: answeredCall.callee_id,
+                timestamp: new Date()
+            });
         }
         let ignoredCall = VideoChatCallLog.findOne({
             _id: Session.get("currentPhoneCall"),
             caller_id: Meteor.userId(),
             status: "IG"
         });
-        if (ignoredCall)
+        if (ignoredCall) {
             Meteor.VideoCallServices.onCallIgnored();
+            Session.set("callState", {
+                message: "Ignored",
+                status: "IG",
+
+                caller: ignoredCall.caller_id,
+                callee: ignoredCall.callee_id,
+                timestamp: new Date()
+            })
+        }
 
         let cancelledCall = VideoChatCallLog.findOne({
             _id: Session.get("currentPhoneCall"),
             status: "D"
         })
-        if (cancelledCall)
+        if (cancelledCall) {
             Meteor.VideoCallServices.callTerminated();
+            Session.get("callState", {
+                message: "Cancelled",
+                status: "D",
+                caller: cancelledCall.caller_id,
+                callee: cancelledCall.callee_id,
+                timestamp: new Date()
+            })
+        }
         let iceFailed = VideoChatCallLog.findOne({
             _id: Session.get("currentPhoneCall"),
             status: "IF",
+
             callee_id: Meteor.userId()
         })
         if (iceFailed) {
@@ -76,13 +110,29 @@ Template.body.onRendered(function() {
                     status: "IRS"
                 }
             })
+            Session.set("callState", {
+                message: "Ice failed, retrying connection",
+                status: "IRS",
+                caller: iceFailed.caller_id,
+                callee: iceFailed.callee_id,
+                timestamp: new Date()
+            })
         }
         let callFailed = VideoChatCallLog.findOne({
             _id: Session.get("currentPhoneCall"),
             status: "F"
         })
-        if (callFailed)
+        if (callFailed) {
             Meteor.VideoCallServices.callTerminated();
+            Session.set("callState", {
+                message: "Call failed",
+                status: "F",
+                caller: iceFailed.caller_id,
+                callee: iceFailed.callee_id,
+                
+                timestamp: new Date()
+            })
+        }
         if (Session.get("currentPhoneCall") == null)
             Meteor.VideoCallServices.callTerminated();
     });

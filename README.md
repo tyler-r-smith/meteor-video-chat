@@ -52,6 +52,35 @@ Initialize events in the client-side Meteor.startup.
 	    }
 	    
 
+## State changes
+To keep track of the status, to allow you give feedback to the user, there is a session variable entitled "callState" see below the states and feedback message. All states have a "timestamp"
+field along with two other basic fields entitled caller and callee which container the appropriate user IDs 
+
+| ----- message ----- | Status code | 
+
+| "Received Call" |  ------ "R"  ------ |
+The call have been received by the callee and a response has been sent to initiate connection
+
+| "Call Answered" |  ----- "A"  ----- |
+The callee has answered the call and allowed access to their webcam
+
+|"Call Ignored" | ----- "IG" ----- |
+The callee has explicitly said that they do not want to continue with the call 
+
+|"Call cancelled" | ---- "D" ---- | 
+The call was cancelled before a connection was established
+
+|"Ice failed, retrying connection" | ----- "IRS" ----- |
+No successful ICE candidates were established, retrying connection
+
+|"Call failed"| ----- "F" -----| 
+It was not possible to connect, call abort
+
+|"Call Successful"| ---"CON"--- |
+Connection between the 2 users has been successful and a video chat should be running at this point. 
+
+**To use these codes, I would create a helper to reactively handle the state changes and display more eloquent messages**
+
 ## Making a Call
 
 If you are initializing the webcam and making a call in the same function block, it is best to call the `callRemote()` function from within the `loadLocalWebcam()` callback like so: 
@@ -83,11 +112,13 @@ To end a call simply call the following function:
 This will call the same function for both users, which will be followed by the "onCallTerminated" event. 
 
 ## TODO
- 1. Improve error handling of connection process, handle ICE failure
- 2. Detect network latency and handle reconnect if necessary
- 3. Add option to continue with only audio if latency is too high
+ 1. Detect network latency and handle reconnect if necessary
+ 2. Add option to continue with only audio if latency is too high
+ 3. Tutorial video 
 
 ## Changelog
+
+ - 18:35GMT 11/04/2016 Version 0.2.10 Added session variable to allow reactive handling of status change
  - 16:15GMT 23/03/2016 Version 0.2.3 Removed hardcoded STUN/TURN servers, to be initialized on startup
  - 05:38GMT 23/03/2016 Version 0.2.2 Added call ignore function and onCallIgnored event
  - 04:08GMT 23/03/2016 version 0.2.1 Program is no longer called from window, but Meteor instead, as per usual development style

@@ -101,6 +101,9 @@ else if (Meteor.isClient) {
         }
         onCallIgnored() {
 
+        }
+        onStateChange() {
+
             }
             /*
              *   Terminate the call, if the call was successful, it will be populated with the userId of the terminator. 
@@ -120,7 +123,7 @@ else if (Meteor.isClient) {
                                 call_end_dt: new Date().getTime()
                             }
                         })
-                    else if (thisCall.status == "R")
+                    else if (thisCall.status == "R" || thisCall.status == "IRS")
                         if (Meteor.userId() == thisCall.callee_id) {
                             Meteor.VideoCallServices.stopRingtone();
                             VideoChatCallLog.update({
@@ -140,6 +143,7 @@ else if (Meteor.isClient) {
                                 }
                             })
                         }
+
                     try {
                         Meteor.VideoCallServices.peerConnection.close()
                     }
@@ -153,6 +157,7 @@ else if (Meteor.isClient) {
 
                 Session.set("currentPhoneCall", null);
                 Session.set("remoteIceCandidates", []);
+                Session.set("callState", null);
                 this.onCallTerminated();
             }
             /*
@@ -231,10 +236,10 @@ else if (Meteor.isClient) {
              */
         _setUpCallerEvents() {
                 this.peerConnection.oniceconnectionstatechange = function(event) {
-                      console.log(Meteor.VideoCallServices.peerConnection.iceConnectionState);
-                      let pc = Meteor.VideoCallServices.peerConnection;
-                      if(pc.iceConnectionState =="failed"){
-                       let currentSession = VideoChatCallLog.findOne({
+                    console.log("Ice state change", Meteor.VideoCallServices.peerConnection.iceConnectionState);
+                    let pc = Meteor.VideoCallServices.peerConnection;
+                    if (pc.iceConnectionState == "failed") {
+                        let currentSession = VideoChatCallLog.findOne({
                             _id: Session.get("currentPhoneCall")
                         });
                         if (currentSession.connection_retry_count <= Meteor.VideoCallServices.connectionRetryLimit) {
@@ -243,8 +248,8 @@ else if (Meteor.isClient) {
                             }, {
                                 $set: {
                                     status: "IF",
-                                    ice_caller:[],
-                                    ice_callee:[]
+                                    ice_caller: [],
+                                    ice_callee: []
                                 },
 
                                 $inc: {
@@ -261,8 +266,28 @@ else if (Meteor.isClient) {
                                 }
                             });
                     }
+                    else if (pc.iceConnectionState == "connected") {
+                        let thisCall = VideoChatCallLog.findOne({
+                            _id: Session.get("currentPhoneCall")
+                        });
+                        Session.set("callState", {
+                            message: "Call successful",
+                            status: "CON",
+                            timestamp: new Date(),
+                            caller: thisCall.caller_id,
+                            callee: thisCall.callee_id
+                        })
+                        VideoChatCallLog.update({
+                            _id: Session.get("currentPhoneCall")
+                        }, {
+                            $set: {
+                                status: "CON",
+                                call_suc_dt: new Date()
+                            }
+                        })
+                    }
 
-                  console.log("iceChange");
+                    console.log("iceChange");
                 }
                 this.peerConnection.onicecandidate = function(event) {
                     console.log(event.candidate);
@@ -353,12 +378,12 @@ else if (Meteor.isClient) {
          */
         callRemote(remoteMeteorId) {
                 Session.set("localIceCandidates", []);
-
                 Session.set("currentPhoneCall", VideoChatCallLog.insert({
                     caller_id: Meteor.userId(),
                     call_dt: new Date().getTime(),
                     conn_dt: "",
                     call_start_dt: "",
+                    call_suc_dt: "",
                     call_end_dt: "",
                     status: "C",
                     callee_id: remoteMeteorId,
@@ -370,14 +395,12 @@ else if (Meteor.isClient) {
                     callee_con_result: "",
                     connection_retry_count: 0
                 }))
-
             }
             /*
              *   Answer the call and set up WebRTC
              *
              */
         answerCall(events) {
-
                 this.stopRingtone();
                 VideoChatCallLog.update({
                     _id: Session.get("currentPhoneCall")
