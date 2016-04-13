@@ -114,7 +114,7 @@ else if (Meteor.isClient) {
                     let thisCall = VideoChatCallLog.findOne({
                         _id: Session.get("currentPhoneCall")
                     });
-                    if (thisCall.status == "A")
+                    if (thisCall.status == "CON")
                         VideoChatCallLog.update({
                             _id: Session.get("currentPhoneCall")
                         }, {
@@ -123,7 +123,7 @@ else if (Meteor.isClient) {
                                 call_end_dt: new Date().getTime()
                             }
                         })
-                    else if (thisCall.status == "R" || thisCall.status == "IRS")
+                    else if (thisCall.status == "R" || thisCall.status == "IRS" || thisCall.status == "A")
                         if (Meteor.userId() == thisCall.callee_id) {
                             Meteor.VideoCallServices.stopRingtone();
                             VideoChatCallLog.update({
@@ -321,10 +321,10 @@ else if (Meteor.isClient) {
                         })
                     }
                 }
-                this.peerConnection.onaddstream = function(event) {
+                this.peerConnection.ontrack = function(event) {
                     console.log("addStream", event);
                     var video = document.getElementById(Meteor.VideoCallServices.remoteVideoHTMLId);
-                    video.src = URL.createObjectURL(event.stream);
+                    video.src = URL.createObjectURL(event.streams[0]);
                     video.play();
                 };
             }
@@ -350,11 +350,11 @@ else if (Meteor.isClient) {
 
 
                 }
-                this.peerConnection.onaddstream = function(event) {
+                this.peerConnection.ontrack = function(event) {
                     console.log("addStream", event);
                     console.log(Meteor.VideoCallServices.remoteVideoHTMLId);
                     var video = document.getElementById(Meteor.VideoCallServices.remoteVideoHTMLId);
-                    video.src = URL.createObjectURL(event.stream);
+                    video.src = URL.createObjectURL(event.streams[0]);
                     video.play();
                 };
             }
