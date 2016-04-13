@@ -165,17 +165,34 @@ else if (Meteor.isClient) {
              *
              */
         _getWebcam(loadPeer, callback) {
-                navigator.polyfillGetWebcam = (navigator.getUserMedia || navigator.webkitGetUserMedia || navigator.mozGetUserMedia || navigator.msGetUserMedia || navigator.mediaDevices.getUserMedia);
-                navigator.polyfillGetWebcam({
-                    video: true,
-                    audio: true
-                }, function(stream) {
+                let handleStream = function(stream) {
+                    console.log("handleStream")
                     if (loadPeer)
                         Meteor.VideoCallServices._loadRTCConnection();
                     Meteor.localStream = stream;
                     Meteor.VideoCallServices.peerConnection.addStream(Meteor.localStream);
                     return callback(stream);
-                }, function() {});
+                };
+                if (navigator.mediaDevices.getUserMedia) {
+                    console.log("new type");
+                    navigator.mediaDevices.getUserMedia({
+                            video: true,
+                            audio: true
+                        })
+                        .then(handleStream)
+                        .catch(function(err) {
+                            console.log(err);
+                        });
+                }
+                else {
+                    navigator.getUserMedia = (navigator.getUserMedia ||
+                        navigator.webkitGetUserMedia ||
+                        navigator.mozGetUserMedia);
+                    navigator.getUserMedia({
+                        video: true,
+                        audio: true
+                    }, handleStream, function() {});
+                }
             }
             /*
              *   Set the local RTC connection up
