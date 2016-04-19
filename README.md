@@ -4,7 +4,7 @@ This is a complete solution to allow you to create a peer2peer video chat system
 
 ## Warning
 
-This package is under daily development and is currently volatile, it is possibly that certain functionality could become nonfunctional in the coming weeks, so click watch on the github page (give a star if you like :)) and I will update the changelog in this readme with any major changes. 
+This package is under daily development and is currently volatile, it is possible that certain functionality could be broken in the coming weeks, so click watch on the github page (give a star if you like :)) and I will update the changelog in this readme with any major changes. 
 
 If you detect any errors or can suggest changes/features, ask me here [https://github.com/elmarti/meteor-video-chat/issues](https://github.com/elmarti/meteor-video-chat/issues)
 
@@ -50,6 +50,11 @@ Initialize events in the client-side Meteor.startup.
 	 Meteor.VideoCallServices.onCallIgnored = function(){
 		     //Code to be executed when the call has been ended by either user. 
 	    }
+	 Meteor.VideoCallServices.onWebcamFail = function(error){
+	        //Code to be executed when a webcam isn't available in the browser instance 
+	        //Here you could terminate the call, try and get the details again with a prompt 
+	        //Have a look at the options available, you may have to make clear to users that they will have to allow permission
+	 }
 	    
 
 ## State changes

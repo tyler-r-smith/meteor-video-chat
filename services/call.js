@@ -102,6 +102,9 @@ else if (Meteor.isClient) {
         onCallIgnored() {
 
         }
+        onWebcamFail() {
+
+        }
         onStateChange() {
 
             }
@@ -158,6 +161,7 @@ else if (Meteor.isClient) {
                 Session.set("currentPhoneCall", null);
                 Session.set("remoteIceCandidates", []);
                 Session.set("callState", null);
+                this.stopRingtone();
                 this.onCallTerminated();
             }
             /*
@@ -181,7 +185,7 @@ else if (Meteor.isClient) {
                         })
                         .then(handleStream)
                         .catch(function(err) {
-                            console.log(err);
+                            Meteor.VideoCallServices.onWebcamFail(err);
                         });
                 }
                 else {
@@ -191,7 +195,9 @@ else if (Meteor.isClient) {
                     navigator.getUserMedia({
                         video: true,
                         audio: true
-                    }, handleStream, function() {});
+                    }, handleStream, function(err, dave) {
+                        console.log("failed", err, dave)
+                    });
                 }
             }
             /*
