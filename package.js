@@ -16,7 +16,7 @@ Package.onUse(function(api) {
   api.use("mizzao:user-status@0.6.6");
   api.use(['templating'], 'client');
   api.addFiles(['services/call.js']);
-  api.addFiles(['template.html', 'template.js'], 'client');
+  api.addFiles(['template.js'], 'client');
   api.export(['VideoChatCallLog', 'VideoCallServices']);
 });
 
