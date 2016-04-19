@@ -1,11 +1,11 @@
 # Meteor Video Chat
 
-This is a complete solution to allow you to create a peer2peer video chat system using DDP as the handshake protocol . 
+This is a complete solution which allows you to create a peer2peer video chat system using DDP as the handshake protocol. 
 
 ## Warning
 
 This package is under daily development and is currently volatile, it is possible that certain functionality could be broken in the coming weeks, so click watch on the github page (give a star if you like :)) and I will update the changelog in this readme with any major changes. 
-
+Along with watching the project, I suggest using a static version number and then upgrading to later versions when you are ready. 
 If you detect any errors or can suggest changes/features, ask me here [https://github.com/elmarti/meteor-video-chat/issues](https://github.com/elmarti/meteor-video-chat/issues)
 
 ## TO USE WEBRTC IN CHROME YOUR SERVER MUST HAVE A SECURE ORIGIN (SSL)
@@ -15,13 +15,13 @@ Find out more about browser compatibility here:  [http://iswebrtcreadyyet.com/](
 
 
 ## Configuration
-Before making a call you must initialize the HTML id of the `<video>` elements that you would like to send the streams to like so: 
+Before making a call you must initialize the HTML id of the `<video>` elements which you would like to send the streams to like so: 
 
       Meteor.VideoCallServices.setLocalWebcam("videoChatCallerVideo");
       Meteor.VideoCallServices.setRemoteWebcam("videoChatAnswerVideo");
       
-You must also specify STUN and TURN servers. Here is a list of STUN/TURN servers, be careful because some havent given explicit permission to use them https://gist.github.com/yetithefoot/7592580
-See more about setting you own STUN and TURN servers here: https://www.webrtc-experiment.com/docs/TURN-server-installation-guide.html http://www.stunprotocol.org/
+You must also specify STUN and TURN servers. Here is a list of STUN/TURN servers, be careful - some haven't given explicit permission for you to use them https://gist.github.com/yetithefoot/7592580
+See more about setting your own STUN and TURN servers here: https://www.webrtc-experiment.com/docs/TURN-server-installation-guide.html http://www.stunprotocol.org/
 
       Meteor.VideoCallServices.STUNTURN = {"iceServers":[
                                         {url:"stun:stun.example.com"},
@@ -29,7 +29,7 @@ See more about setting you own STUN and TURN servers here: https://www.webrtc-ex
                                         credential: "dave",
                                         username:"test@dave.com"}]};
       
-This could be done as you are making the call, in `Meteor.startup` or wherever you see fit.
+This could be done just before you make/ as you receive the call, or in `Meteor.startup`.
 
 If you like, you can set a ringtone, which will play on loop when a call is received:
 
@@ -38,6 +38,7 @@ If you like, you can set a ringtone, which will play on loop when a call is rece
 By default, when it has not been possible to connect, the program will try 10 times to negotiate a connection. You can override it using the following:
 
     Meteor.VideoCallServices.connectionRetryLimit = 10; 
+    
 ## Events
 Initialize events in the client-side Meteor.startup.
 
@@ -52,8 +53,8 @@ Initialize events in the client-side Meteor.startup.
 	    }
 	 Meteor.VideoCallServices.onWebcamFail = function(error){
 	        //Code to be executed when a webcam isn't available in the browser instance 
-	        //Here you could terminate the call, try and get the details again with a prompt 
-	        //Have a look at the options available, you may have to make clear to users that they will have to allow permission
+	        //Here you could terminate the call, or try and get the details again with a prompt 
+	        //You may want to make clear to users that they will have to allow permission
 	 }
 	    
 
@@ -61,28 +62,28 @@ Initialize events in the client-side Meteor.startup.
 To keep track of the status, to allow you give feedback to the user, there is a session variable entitled "callState" see below the states and feedback message. All states have a "timestamp"
 field along with two other basic fields entitled caller and callee which container the appropriate user IDs 
 
-| ----- message ----- | Status code | 
+| ----- message ----- | Status code | Explanation |
 
 | "Received Call" |  ------ "R"  ------ |
-The call have been received by the callee and a response has been sent to initiate connection
+The call have been received by the callee and a response has been sent to initiate connection |
 
 | "Call Answered" |  ----- "A"  ----- |
-The callee has answered the call and allowed access to their webcam
+The callee has answered the call and allowed access to their webcam |
 
 |"Call Ignored" | ----- "IG" ----- |
-The callee has explicitly said that they do not want to continue with the call 
+The callee has explicitly said that they do not want to continue with the call |
 
 |"Call cancelled" | ---- "D" ---- | 
-The call was cancelled before a connection was established
+The call was cancelled before a connection was established |
 
 |"Ice failed, retrying connection" | ----- "IRS" ----- |
-No successful ICE candidates were established, retrying connection
+No successful ICE candidates were established, retrying connection |
 
 |"Call failed"| ----- "F" -----| 
-It was not possible to connect, call abort
+It was not possible to connect, call abort |
 
 |"Call Successful"| ---"CON"--- |
-Connection between the 2 users has been successful and a video chat should be running at this point. 
+Connection between the 2 users has been successful and a video chat should be running at this point. |
 
 **To use these codes, I would create a helper to reactively handle the state changes and display more eloquent messages**
 
@@ -119,7 +120,8 @@ This will call the same function for both users, which will be followed by the "
 ## TODO
  1. Detect network latency and handle reconnect if necessary
  2. Add option to continue with only audio if latency is too high
- 3. Tutorial video 
+ 3. Handle audio-only connection
+ 4. Tutorial video 
 
 ## Changelog
 
