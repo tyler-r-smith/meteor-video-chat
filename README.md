@@ -87,6 +87,10 @@ Connection between the 2 users has been successful and a video chat should be ru
 
 **To use these codes, I would create a helper to reactively handle the state changes and display more eloquent messages**
 
+## Options - a new section to allow functional customisation
+Meteor.VideoCallServices.settings 
+    .showLocalVideo = true
+
 ## Making a Call
 
 If you are initializing the webcam and making a call in the same function block, it is best to call the `callRemote()` function from within the `loadLocalWebcam()` callback like so: 
