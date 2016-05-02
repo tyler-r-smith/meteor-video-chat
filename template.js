@@ -179,8 +179,8 @@ if (Meteor.isClient) {
                             console.log("sdp_callee");
                             Meteor.VideoCallServices.peerConnection.setRemoteDescription(new RTCSessionDescription(
                                     JSON.parse(message.fields.SDP_callee)
-                                ))
-                                .done(function() {});
+                                ), function(){}, function(){})
+                                
                         }
                         if (message.fields.status != undefined) {
                             if (message.fields.status == currentPhoneCall.callee_id)
@@ -209,10 +209,8 @@ if (Meteor.isClient) {
                         if (message.fields.SDP_caller != undefined) {
                             Meteor.VideoCallServices.peerConnection.setRemoteDescription(new RTCSessionDescription(
                                     JSON.parse(message.fields.SDP_caller)
-                                ))
-                                .done(function() {
-                                    Meteor.VideoCallServices.peerConnection.createAnswer()
-                                        .done(function(answer) {
+                                ), ()=> {
+                                    Meteor.VideoCallServices.peerConnection.createAnswer((answer)=> {
                                             Meteor.VideoCallServices.peerConnection.setLocalDescription(answer);
                                             VideoChatCallLog.update({
                                                 _id: Session.get("currentPhoneCall")
@@ -221,8 +219,10 @@ if (Meteor.isClient) {
                                                     SDP_callee: JSON.stringify(answer)
                                                 }
                                             });
-                                        })
-                                });
+                                        }, function(){})
+                                       
+                                }, function(){})
+                                
                         }
                         if (message.fields.ice_caller != undefined) {
                             let iceCallers = message.fields.ice_caller;

@@ -232,6 +232,8 @@ else if (Meteor.isClient) {
          */
         _loadRTCConnection() {
                 console.log(this);
+                window.RTCPeerConnection = window.RTCPeerConnection || window.mozRTCPeerConnection ||
+                    window.webkitRTCPeerConnection || window.msRTCPeerConnection;
                 this.peerConnection = new RTCPeerConnection(this.STUNTURN);
             }
             /*
@@ -239,7 +241,7 @@ else if (Meteor.isClient) {
              *
              */
         _createLocalOffer() {
-                Meteor.VideoCallServices.peerConnection.createOffer().done(function(desc) {
+                Meteor.VideoCallServices.peerConnection.createOffer(function(desc) {
                     console.log("createOffer", desc);
                     console.log(Session.get("currentPhoneCall"));
                     console.log(VideoChatCallLog.update({
@@ -251,7 +253,9 @@ else if (Meteor.isClient) {
                     }))
                     Meteor.VideoCallServices.peerConnection.setLocalDescription(desc);
 
-                })
+                }, function(err) {
+                    if (err) console.log(err)
+                });
             }
             /**
              * Set up the event handlers for the caller
@@ -327,10 +331,10 @@ else if (Meteor.isClient) {
                         })
                     }
                 }
-                this.peerConnection.ontrack = function(event) {
+                this.peerConnection.onaddstream = function(event) {
                     console.log("addStream", event);
                     var video = document.getElementById(Meteor.VideoCallServices.remoteVideoHTMLId);
-                    video.src = URL.createObjectURL(event.streams[0]);
+                    video.src = URL.createObjectURL(event.stream);
                     video.play();
                 };
             }
@@ -356,11 +360,11 @@ else if (Meteor.isClient) {
 
 
                 }
-                this.peerConnection.ontrack = function(event) {
+                this.peerConnection.onaddstream = function(event) {
                     console.log("addStream", event);
                     console.log(Meteor.VideoCallServices.remoteVideoHTMLId);
                     var video = document.getElementById(Meteor.VideoCallServices.remoteVideoHTMLId);
-                    video.src = URL.createObjectURL(event.streams[0]);
+                    video.src = URL.createObjectURL(event.stream);
                     video.play();
                 };
             }

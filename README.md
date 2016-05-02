@@ -124,7 +124,7 @@ This will call the same function for both users, which will be followed by the "
  4. Tutorial video 
 
 ## Changelog
-
+ - 18:39GMT 19/06/2016 Version 0.2.16 Added ability to specify 
  - 18:35GMT 11/04/2016 Version 0.2.10 Added session variable to allow reactive handling of status change
  - 16:15GMT 23/03/2016 Version 0.2.3 Removed hardcoded STUN/TURN servers, to be initialized on startup
  - 05:38GMT 23/03/2016 Version 0.2.2 Added call ignore function and onCallIgnored event
