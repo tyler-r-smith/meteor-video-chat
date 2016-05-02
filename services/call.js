@@ -91,6 +91,9 @@ else if (Meteor.isClient) {
                 this.peerConnection = {};
                 this.STUNTURN = null;
                 this.connectionRetryLimit = 10;
+                this.settings = {
+                    showLocalVideo: true
+                }
             }
             //The following 3 functions are events which can be overriden
         onReceivePhoneCall() {
@@ -211,11 +214,13 @@ else if (Meteor.isClient) {
         loadLocalWebcam(loadPeer, callback) {
             let localVideoHTMLId = this.localVideoHTMLId;
             this._getWebcam(loadPeer, function(stream) {
-                let localVideo = document.getElementById(localVideoHTMLId);
-                console.log(this);
-                localVideo.src = URL.createObjectURL(stream);
-                localVideo.muted = true;
-                localVideo.play();
+                if (this.settings.showLocalVideo) {
+                    let localVideo = document.getElementById(localVideoHTMLId);
+                    console.log(this);
+                    localVideo.src = URL.createObjectURL(stream);
+                    localVideo.muted = true;
+                    localVideo.play();
+                }
                 if (callback) return callback();
             });
         }
