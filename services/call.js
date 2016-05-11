@@ -214,7 +214,7 @@ else if (Meteor.isClient) {
         loadLocalWebcam(loadPeer, callback) {
             let localVideoHTMLId = this.localVideoHTMLId;
             this._getWebcam(loadPeer, (stream) => {
-                if (this.settings.showLocalVideo) {
+                if (localVideoHTMLId) {
                     let localVideo = document.getElementById(localVideoHTMLId);
                     localVideo.src = URL.createObjectURL(stream);
                     localVideo.muted = true;
