@@ -1,14 +1,5 @@
     VideoCallServices = {
         VideoChatCallLog: new Meteor.Collection("VideoChatCallLog"),
-        mainSub: Meteor.publish("VideoCallChatLog", function() {
-            return VideoCallServices.VideoChatCallLog.find({
-                $or: [{
-                    caller_id: this.userId
-                }, {
-                    callee_id: this.userId
-                }]
-            });
-        }),
         /*
          *    Loop to ensure that expired sessions are disposed of
          *
