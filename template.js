@@ -15,7 +15,7 @@ renderCallTemplate = function() {
     self.autorun(function() {
         console.log("call autorun");
         self.subscribe("VideoCallChatLog");
-        let newIncomingCall = VideoChatCallLog.findOne({
+        let newIncomingCall = Meteor.VideoCallServices.VideoChatCallLog.findOne({
             status: "C",
             callee_id: Meteor.userId()
         });
@@ -35,7 +35,7 @@ renderCallTemplate = function() {
             Meteor.VideoCallServices._loadRTCConnection();
             Meteor.VideoCallServices._setUpCalleeEvents();
             Meteor.VideoCallServices._setUpMixedEvents();
-            VideoChatCallLog.update({
+            Meteor.VideoCallServices.VideoChatCallLog.update({
                 _id: newIncomingCall._id
             }, {
                 $set: {
@@ -45,7 +45,7 @@ renderCallTemplate = function() {
             });
             Meteor.VideoCallServices.onReceivePhoneCall();
         }
-        let answeredCall = VideoChatCallLog.findOne({
+        let answeredCall = Meteor.VideoCallServices.VideoChatCallLog.findOne({
             status: "A",
             callee_id: Meteor.userId()
         });
@@ -60,7 +60,7 @@ renderCallTemplate = function() {
                 timestamp: new Date()
             });
         }
-        let ignoredCall = VideoChatCallLog.findOne({
+        let ignoredCall = Meteor.VideoCallServices.VideoChatCallLog.findOne({
             _id: Session.get("currentPhoneCall"),
             caller_id: Meteor.userId(),
             status: "IG"
@@ -77,7 +77,7 @@ renderCallTemplate = function() {
             })
         }
 
-        let cancelledCall = VideoChatCallLog.findOne({
+        let cancelledCall = Meteor.VideoCallServices.VideoChatCallLog.findOne({
             _id: Session.get("currentPhoneCall"),
             status: "D"
         })
@@ -91,7 +91,7 @@ renderCallTemplate = function() {
                 timestamp: new Date()
             })
         }
-        let iceFailed = VideoChatCallLog.findOne({
+        let iceFailed = Meteor.VideoCallServices.VideoChatCallLog.findOne({
             _id: Session.get("currentPhoneCall"),
             status: "IF",
 
@@ -102,7 +102,7 @@ renderCallTemplate = function() {
             Meteor.VideoCallServices._setUpCalleeEvents();
             Meteor.VideoCallServices._setUpMixedEvents();
             Meteor.VideoCallServices.peerConnection.addStream(Meteor.localStream);
-            VideoChatCallLog.update({
+            Meteor.VideoCallServices.VideoChatCallLog.update({
                 _id: Session.get("currentPhoneCall")
             }, {
                 $set: {
@@ -117,7 +117,7 @@ renderCallTemplate = function() {
                 timestamp: new Date()
             })
         }
-        let callFailed = VideoChatCallLog.findOne({
+        let callFailed = Meteor.VideoCallServices.VideoChatCallLog.findOne({
             _id: Session.get("currentPhoneCall"),
             status: "F"
         })
@@ -142,7 +142,7 @@ renderCallTemplate = function() {
      */
     Meteor.connection._stream.on('message', function(message) {
         if (Session.get("currentPhoneCall")) {
-            let currentPhoneCall = VideoChatCallLog.findOne({
+            let currentPhoneCall = Meteor.VideoCallServices.VideoChatCallLog.findOne({
                 _id: Session.get("currentPhoneCall")
             });
             let caller = currentPhoneCall.caller_id == Meteor.userId();
@@ -165,7 +165,7 @@ renderCallTemplate = function() {
                                     string: ice.string
                                 }
                                 console.log(query);
-                                VideoChatCallLog.update({
+                                Meteor.VideoCallServices.VideoChatCallLog.update({
                                     _id: Session.get("currentPhoneCall")
                                 }, {
                                     $set: query
@@ -210,7 +210,7 @@ renderCallTemplate = function() {
                         ), () => {
                             Meteor.VideoCallServices.peerConnection.createAnswer((answer) => {
                                 Meteor.VideoCallServices.peerConnection.setLocalDescription(answer);
-                                VideoChatCallLog.update({
+                                Meteor.VideoCallServices.VideoChatCallLog.update({
                                     _id: Session.get("currentPhoneCall")
                                 }, {
                                     $set: {
@@ -236,7 +236,7 @@ renderCallTemplate = function() {
                                     string: ice.string
                                 }
                                 console.log(query);
-                                VideoChatCallLog.update({
+                                Meteor.VideoCallServices.VideoChatCallLog.update({
                                     _id: Session.get("currentPhoneCall")
                                 }, {
                                     $set: query
