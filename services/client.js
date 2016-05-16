@@ -4,9 +4,6 @@
                 this.STUNTURN = null;
                 this.connectionRetryLimit = 10;
                 this.VideoChatCallLog =  new Meteor.Collection("VideoChatCallLog");
-                this.settings = {
-                    showLocalVideo: true
-                }
             }
             //The following 3 functions are events which can be overriden
         onReceivePhoneCall() {
