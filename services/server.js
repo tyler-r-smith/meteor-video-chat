@@ -1,63 +1,5 @@
     VideoCallServices = {
-        VideoChatCallLog: new Meteor.Collection("VideoChatCallLog"),
-        /*
-         *    Loop to ensure that expired sessions are disposed of
-         *
-         */
-        validationLoop: Meteor.setInterval(function() {
-                let finish = new Date().getTime();
-
-                //Handle user offline without connect
-                VideoCallServices.VideoChatCallLog.find({
-                    status: "C"
-                }).forEach(function(log) {
-                    Meteor.users.find({
-                        $or: [{
-                            _id: log.caller_id
-                        }, {
-                            _id: log.callee_id
-                        }]
-                    }).forEach(function(thisUser) {
-                        if (!thisUser.status.online)
-                            VideoCallServices.VideoChatCallLog.update({
-                                _id: log._id
-                            }, {
-                                $set: {
-                                    status: "DNC"
-                                }
-                            })
-                    })
-                });
-
-                //handle call received and answered but user offline
-                VideoCallServices.VideoChatCallLog.find({
-                    $or: [{
-                        status: "R"
-                    }, {
-                        status: "A"
-                    }]
-
-                }).forEach(function(log) {
-                    Meteor.users.find({
-                        $or: [{
-                            _id: log.caller_id
-                        }, {
-                            _id: log.callee_id
-                        }]
-                    }).forEach(function(thisUser) {
-                        if (!thisUser.status.online)
-                            VideoCallServices.VideoChatCallLog.update({
-                                _id: log._id
-                            }, {
-                                $set: {
-                                    status: "CAN"
-                                }
-                            })
-                    })
-                });
-
-            },
-            10000)
+        VideoChatCallLog: new Meteor.Collection("VideoChatCallLog")
     };
     /*
      *   Allow users to update the connection data collection from the client side
@@ -69,7 +11,34 @@
             return Meteor.userId() == originalEntry.callee_id || Meteor.userId() == originalEntry.caller_id;
 
         },
-        insert: function() {
-            return Meteor.user();
+        insert: function(id, entry) {
+            if (Meteor.user()) {
+                let callee = entry.callee_id;
+                let calleeInCall = VideoCallServices.VideoChatCallLog.findOne({
+                    callee_id: callee,
+                    status: {
+                        $in: ["R", "A", "CON"]
+                    }
+                })
+                let callMadeButDesposedOf = VideoCallServices.VideoChatCallLog.findOne({
+                    callee_id: callee,
+                    status: "C"
+                })
+                if (callMadeButDesposedOf) {
+                    VideoCallServices.VideoChatCallLog.update({
+                        _id: callMadeButDesposedOf._id
+                    }, {
+                        $set: {
+                            status: "F"
+                        }
+                    })
+                }
+                if (calleeInCall) {
+                    throw new Meteor.Error(500, "Callee is currently in a call");
+                    return false;
+                }
+                else return true;
+            }
+            else return false;
         }
     })

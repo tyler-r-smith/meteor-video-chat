@@ -322,7 +322,8 @@
          */
         callRemote(remoteMeteorId) {
                 Session.set("localIceCandidates", []);
-                Session.set("currentPhoneCall", this.VideoChatCallLog.insert({
+                try{
+                    let newCall = this.VideoChatCallLog.insert({
                     caller_id: Meteor.userId(),
                     call_dt: new Date().getTime(),
                     conn_dt: "",
@@ -338,7 +339,13 @@
                     caller_con_result: "",
                     callee_con_result: "",
                     connection_retry_count: 0
-                }))
+                })
+                 Session.set("currentPhoneCall",newCall )
+                }
+                catch(err){
+                    console.log(err);
+                }
+               
             }
             /*
              *   Answer the call and set up WebRTC
