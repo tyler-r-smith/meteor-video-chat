@@ -1,0 +1,90 @@
+<head>
+    <title>video-chat</title>
+</head>
+
+<body>
+    <h1>Welcome to Meteor Video Chat!</h1> {{>loginButtons}} {{> MeteorVideoChat}}
+</body>
+
+
+
+<template name="MeteorVideoChat">
+
+    <ul>
+        {{#each getUsers}} {{#if isntCurrentlyLoggedInUser}}
+        <li class="userIDLink" style="cursor:pointer;">{{getEmail}}
+            <p class="text-success">online!</p>
+        </li>{{/if}} {{/each}}
+    </ul>
+</template>
+
+<template name="chatModal">
+    <div class="modal fade">
+        <div class="modal-dialog">
+            <div class="modal-content">
+
+                <div class="modal-header">
+                    <h4 class="modal-title">{{getStatus}}</h4>
+                </div>
+
+                <div class="modal-body">
+                    <div style="text-align:center">
+                        <video width="100%" id="videoChatAnswerVideo" poster="https://d13yacurqjgara.cloudfront.net/users/82092/screenshots/1073359/spinner.gif"></video>
+
+                        <video style="width:250px" id="videoChatCallerVideo"></video>
+
+
+
+
+
+                    </div>
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-danger" id="closeChat">End Call</button>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</template>
+<template name="incomingCall">
+    <div class="modal fade">
+        <div class="modal-dialog">
+            <div class="modal-content">
+
+                <div class="modal-header">
+                    <h4 class="modal-title"> Callee{{getStatus}}</h4>
+                </div>
+
+                <div class="modal-body">
+                    <div style="text-align:center">
+                        <video width="100%" id="videoChatAnswerVideo" poster="https://d13yacurqjgara.cloudfront.net/users/82092/screenshots/1073359/spinner.gif"></video>
+
+                        <video style="width:250px" id="videoChatCallerVideo"></video>
+
+
+
+
+
+                    </div>
+                    {{#if incomingPhoneCall}}
+                    <div class="text-center">
+                        <h1>{{getCallerName}} is calling you!</h1>
+                    </div>
+                    {{/if}}
+                </div>
+
+                <div class="modal-footer">
+
+                    <button type="button" id="answerCall" class="btn btn-success">Answer</button>
+                    <button type="button" id="ignoreCall" class="btn btn-danger">Ignore</button>
+
+                </div>
+
+
+
+            </div>
+        </div>
+    </div>
+</template>
