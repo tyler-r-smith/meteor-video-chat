@@ -15,6 +15,12 @@ Find out more about browser compatibility here:  [http://iswebrtcreadyyet.com/](
 
 
 ## Configuration
+Select a template into which you would like to render the chat and do it like so 
+
+      Template.body.onRendered(renderCallTemplate);
+I plan to decouple the project from blaze, if you're using angular or React, just attach it to the body. 
+
+
 Before making a call you must initialize the HTML id of the `<video>` elements which you would like to send the streams to like so: 
 
       Meteor.VideoCallServices.setLocalWebcam("videoChatCallerVideo");
