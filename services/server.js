@@ -42,3 +42,47 @@
             else return false;
         }
     })
+    Meteor.users.find({
+        "status.online": true
+    }).observe({
+        removed: function(id) {
+            VideoCallServices.VideoChatCallLog.find({
+                $or: [{
+                    caller_id: this.userId
+                }, {
+                    callee_id: this.userId
+                }],
+                $or: [{
+                    status: "R"
+                }, {
+                    status: "IRS"
+                }, {
+                    status: "A"
+                }]
+            }).forEach(function(doc) {
+                VideoCallServices.VideoChatCallLog.update({
+                    _id: doc._id
+                }, {
+                    $set: {
+                        status: "F"
+                    }
+                })
+            });
+            VideoCallServices.VideoChatCallLog.find({
+                $or: [{
+                    caller_id: this.userId
+                }, {
+                    callee_id: this.userId
+                }],
+                status: "CON"
+            }).forEach(function(doc) {
+                VideoCallServices.VideoChatCallLog.update({
+                    _id: doc._id
+                }, {
+                    $set: {
+                        status: "FIN"
+                    }
+                })
+            })
+        }
+    });

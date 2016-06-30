@@ -91,6 +91,8 @@ It was not possible to connect, call abort |
 |"Call Successful"| ---"CON"--- |
 Connection between the 2 users has been successful and a video chat should be running at this point. |
 
+|"Call Finished"| ---"FIN"--- |
+Call has been carried out successfully and has finished 
 **To use these codes, I would create a helper to reactively handle the state changes and display more eloquent messages**
 
 
