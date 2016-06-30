@@ -152,27 +152,22 @@ renderCallTemplate = function() {
                     console.log("caller", message);
                     if (message.fields.ice_callee != undefined) {
                         console.log("ice callee", message.fields);
-                        let iceCallers = message.fields.ice_callee;
-                        for (let i = 0; i < iceCallers.length; i++) {
-                            let ice = iceCallers[i];
-                            if (!ice.seen) {
-                                console.log("loadingIce", ice);
-                                Meteor.VideoCallServices.peerConnection.addIceCandidate(
-                                    new RTCIceCandidate(JSON.parse(ice.string)));
-                                let query = {};
-                                query["ice_callee." + i] = {
-                                    seen: true,
-                                    string: ice.string
-                                }
-                                console.log(query);
-                                Meteor.VideoCallServices.VideoChatCallLog.update({
-                                    _id: Session.get("currentPhoneCall")
-                                }, {
-                                    $set: query
-                                })
-                            }
-                        };
+                        let iceCaller = message.fields.ice_callee;
+
+
+
+                        Meteor.VideoCallServices.peerConnection.addIceCandidate(
+                            new RTCIceCandidate(JSON.parse(iceCaller)),
+                            function() {
+
+                            },
+                            function(err) {
+                                console.log(err);
+                            });
+
+
                     }
+
                     if (message.fields.SDP_callee != undefined) {
                         console.log("sdp_callee");
                         Meteor.VideoCallServices.peerConnection.setRemoteDescription(new RTCSessionDescription(
@@ -186,6 +181,7 @@ renderCallTemplate = function() {
                         if (message.fields.status == "CAN")
                             Meteor.VideoCallServices.callTerminated();
                         if (message.fields.status == "A") {
+                            console.log("EY");
                             Meteor.VideoCallServices._createLocalOffer();
                             Meteor.VideoCallServices._setUpCallerEvents();
                             Meteor.VideoCallServices._setUpMixedEvents();
