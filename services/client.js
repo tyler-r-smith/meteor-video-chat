@@ -15,8 +15,8 @@
     onCallIgnored() {
 
     }
-    onWebcamFail() {
-
+    onWebcamFail(err) {
+      console.log(err);
     }
     onStateChange() {
 
@@ -110,8 +110,8 @@
           navigator.getUserMedia({
             video: true,
             audio: true
-          }, handleStream, function(err, dave) {
-            console.log("failed", err, dave)
+          }, handleStream, function(err) {
+            Meteor.VideoCallServices.onWebcamFail(err);
           });
         }
       }
