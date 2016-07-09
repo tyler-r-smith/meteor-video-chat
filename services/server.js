@@ -60,6 +60,7 @@
                     status: "A"
                 }]
             }).forEach(function(doc) {
+                console.log("failed", doc);
                 VideoCallServices.VideoChatCallLog.update({
                     _id: doc._id
                 }, {
@@ -76,6 +77,7 @@
                 }],
                 status: "CON"
             }).forEach(function(doc) {
+                console.log("end successful", doc);
                 VideoCallServices.VideoChatCallLog.update({
                     _id: doc._id
                 }, {

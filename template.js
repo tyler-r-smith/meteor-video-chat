@@ -147,26 +147,28 @@ renderCallTemplate = function() {
             });
             let caller = currentPhoneCall.caller_id == Meteor.userId();
             message = JSON.parse(message);
-            if (message.msg == "changed" && message.collection == "VideoChatCallLog") {
+            if (message.msg == "changed" && message.collection == "VideoChatCallLog" && message.fields != undefined) {
                 if (caller) {
                     console.log("caller", message);
-                    if (message.fields.ice_callee != undefined) {
-                        console.log("ice callee", message.fields);
-                        let iceCaller = message.fields.ice_callee;
+                  
+                        if (message.fields.ice_callee != undefined) {
+                            console.log("ice callee", message.fields);
+                            let iceCaller = message.fields.ice_callee;
 
 
 
-                        Meteor.VideoCallServices.peerConnection.addIceCandidate(
-                            new RTCIceCandidate(JSON.parse(iceCaller)),
-                            function() {
 
-                            },
-                            function(err) {
-                                console.log(err);
-                            });
+                            Meteor.VideoCallServices.peerConnection.addIceCandidate(
+                                new RTCIceCandidate(JSON.parse(iceCaller)),
+                                function() {
+
+                                },
+                                function(err) {
+                                    console.log(err);
+                                });
 
 
-                    }
+                        }
 
                     if (message.fields.SDP_callee != undefined) {
                         console.log("sdp_callee");
@@ -218,28 +220,29 @@ renderCallTemplate = function() {
                         }, function() {})
 
                     }
-                    if (message.fields.ice_caller != undefined) {
-                        let iceCallers = message.fields.ice_caller;
-                        for (let i = 0; i < iceCallers.length; i++) {
-                            let ice = iceCallers[i];
-                            if (!ice.seen) {
-                                console.log("loadingIce", ice);
-                                Meteor.VideoCallServices.peerConnection.addIceCandidate(
-                                    new RTCIceCandidate(JSON.parse(ice.string)));
-                                let query = {};
-                                query["ice_caller." + i] = {
-                                    seen: true,
-                                    string: ice.string
+            
+                        if (message.fields.ice_caller != undefined) {
+                            let iceCallers = message.fields.ice_caller;
+                            for (let i = 0; i < iceCallers.length; i++) {
+                                let ice = iceCallers[i];
+                                if (!ice.seen) {
+                                    console.log("loadingIce", ice);
+                                    Meteor.VideoCallServices.peerConnection.addIceCandidate(
+                                        new RTCIceCandidate(JSON.parse(ice.string)));
+                                    let query = {};
+                                    query["ice_caller." + i] = {
+                                        seen: true,
+                                        string: ice.string
+                                    }
+                                    console.log(query);
+                                    Meteor.VideoCallServices.VideoChatCallLog.update({
+                                        _id: Session.get("currentPhoneCall")
+                                    }, {
+                                        $set: query
+                                    })
                                 }
-                                console.log(query);
-                                Meteor.VideoCallServices.VideoChatCallLog.update({
-                                    _id: Session.get("currentPhoneCall")
-                                }, {
-                                    $set: query
-                                })
-                            }
-                        };
-                    }
+                            };
+                        }
                 }
             }
         }

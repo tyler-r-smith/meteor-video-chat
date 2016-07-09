@@ -92,7 +92,7 @@
           Meteor.VideoCallServices.peerConnection.addStream(Meteor.localStream);
           return callback(stream);
         };
-        if (navigator.mediaDevices.getUserMedia) {
+        if (navigator.mediaDevices) {
           console.log("new type");
           navigator.mediaDevices.getUserMedia({
               video: true,
@@ -151,7 +151,7 @@
         window.RTCPeerConnection = window.RTCPeerConnection || window.mozRTCPeerConnection ||
           window.webkitRTCPeerConnection || window.msRTCPeerConnection;
 
-    
+
         this.peerConnection = new RTCPeerConnection(this.STUNTURN);
       }
       /*
@@ -238,18 +238,22 @@
         }
         this.peerConnection.onicecandidate = function(event) {
           console.log(event.candidate);
-          if (event.candidate) {
+          if (event.candidate)
             self.VideoChatCallLog.update({
               _id: Session.get("currentPhoneCall")
             }, {
               $set: {
-                ice_caller: 
-                  JSON.stringify(event.candidate)
-              
-              
+                ice_caller: JSON.stringify(event.candidate)
               }
             })
-          }
+          else
+            self.VideoChatCallLog.update({
+              _id: Session.get("currentPhoneCall")
+            }, {
+              $unset: {
+                ice_caller: ""
+              }
+            })
         }
         this.peerConnection.onaddstream = function(event) {
           console.log("addStream", event);
@@ -266,16 +270,23 @@
         let self = this;
         this.peerConnection.onicecandidate = function(event) {
           console.log(event.candidate);
-          if (event.candidate) {
+          if (event.candidate)
             self.VideoChatCallLog.update({
               _id: Session.get("currentPhoneCall")
             }, {
               $set: {
-                ice_callee:JSON.stringify(event.candidate)
-                
+                ice_callee: JSON.stringify(event.candidate)
+
               }
             })
-          }
+          else
+            self.VideoChatCallLog.update({
+              _id: Session.get("currentPhoneCall")
+            }, {
+              $unset: {
+                ice_callee: ""
+              }
+            })
 
 
         }
