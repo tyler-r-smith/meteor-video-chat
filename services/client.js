@@ -1,3 +1,7 @@
+
+  
+  
+  
   VideoCallServices = new class {
     constructor() {
         this.peerConnection = {};
@@ -92,7 +96,7 @@
           Meteor.VideoCallServices.peerConnection.addStream(Meteor.localStream);
           return callback(stream);
         };
-        if (navigator.mediaDevices) {
+        if (navigator.mediaDevices && $.browser.mozilla) {
           console.log("new type");
           navigator.mediaDevices.getUserMedia({
               video: true,
