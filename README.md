@@ -18,6 +18,10 @@ Find out more about browser compatibility here:  [http://iswebrtcreadyyet.com/](
 Select a template into which you would like to render the chat and do it like so 
 
       Template.body.onRendered(renderCallTemplate);
+      
+      OR
+      
+      renderCallTemplate(targettemplate);
 I plan to decouple the project from blaze, if you're using angular or React, just attach it to the body. 
 
 
