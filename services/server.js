@@ -48,9 +48,9 @@
         removed: function(id) {
             VideoCallServices.VideoChatCallLog.find({
                 $or: [{
-                    caller_id: this.userId
+                    caller_id: Meteor.userId()
                 }, {
-                    callee_id: this.userId
+                    callee_id: Meteor.userId()
                 }],
                 $or: [{
                     status: "R"
@@ -71,9 +71,9 @@
             });
             VideoCallServices.VideoChatCallLog.find({
                 $or: [{
-                    caller_id: this.userId
+                    caller_id: Meteor.userId()
                 }, {
-                    callee_id: this.userId
+                    callee_id:Meteor.userId()
                 }],
                 status: "CON"
             }).forEach(function(doc) {
