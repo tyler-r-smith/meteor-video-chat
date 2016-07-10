@@ -45,21 +45,24 @@
     Meteor.users.find({
         "status.online": true
     }).observe({
-        removed: function(id) {
+        removed: function(user) {
             VideoCallServices.VideoChatCallLog.find({
-                $or: [{
-                    caller_id: this.userId
-                }, {
-                    callee_id: this.userId
-                }],
-                $or: [{
-                    status: "R"
-                }, {
-                    status: "IRS"
-                }, {
-                    status: "A"
+                $and: [{
+                    $or: [{
+                        caller_id: user._id
+                    }, {
+                        callee_id: user._id
+                    }],
+                    $or: [{
+                        status: "R"
+                    }, {
+                        status: "IRS"
+                    }, {
+                        status: "A"
+                    }]
                 }]
             }).forEach(function(doc) {
+                console.log("marking call failed", doc);
                 VideoCallServices.VideoChatCallLog.update({
                     _id: doc._id
                 }, {
@@ -69,18 +72,20 @@
                 })
             });
             VideoCallServices.VideoChatCallLog.find({
-                 $or: [{
-                    caller_id: this.userId
+                $or: [{
+                    caller_id: user._id
                 }, {
-                    callee_id: this.userId
-                }],status:"CON"}).forEach(function(doc) {
-                    VideoCallServices.VideoChatCallLog.update({
+                    callee_id: user._id
+                }],
+                status: "CON"
+            }).forEach(function(doc) {
+                VideoCallServices.VideoChatCallLog.update({
                     _id: doc._id
                 }, {
                     $set: {
                         status: "FIN"
                     }
                 })
-                })
+            })
         }
     });
