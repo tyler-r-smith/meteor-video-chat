@@ -1,10 +1,11 @@
-renderCallTemplate = function() {
+renderCallTemplate = function(template) {
     Session.set("currentPhoneCall", null);
     Session.set("phoneIsRinging", false);
     Session.set("remoteIceCandidates", []);
     Session.set("callState", null);
-    Session.set("")
-    let self = this;
+    Session.set("");
+    if(!template) var self = this;
+    else var self = template;
     /*
      *   Autorun is used to detect changes in the publication. 
      *   The functionality triggered by changes is used to devise as to 
