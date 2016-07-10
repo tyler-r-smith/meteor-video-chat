@@ -72,12 +72,14 @@
                 })
             });
             VideoCallServices.VideoChatCallLog.find({
-                $or: [{
-                    caller_id: user._id
-                }, {
-                    callee_id: user._id
-                }],
-                status: "CON"
+                $and: [{
+                    $or: [{
+                        caller_id: user._id
+                    }, {
+                        callee_id: user._id
+                    }],
+                    status: "CON"
+                }]
             }).forEach(function(doc) {
                 VideoCallServices.VideoChatCallLog.update({
                     _id: doc._id
