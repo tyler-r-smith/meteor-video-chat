@@ -63,7 +63,6 @@
                     }]
                 }]
             }).forEach(function(doc) {
-                console.log("marking call failed", doc);
                 VideoCallServices.VideoChatCallLog.update({
                     _id: doc._id
                 }, {

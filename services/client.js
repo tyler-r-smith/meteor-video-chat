@@ -213,8 +213,8 @@ navigator.sayswho= (function(){
               }, {
                 $set: {
                   status: "IF",
-                  ice_caller: [],
-                  ice_callee: []
+                  ice_caller: "",
+                  ice_callee: ""
                 },
 
                 $inc: {
@@ -365,8 +365,8 @@ navigator.sayswho= (function(){
             callee_id: remoteMeteorId,
             SDP_caller: "",
             SDP_callee: "",
-            ice_caller: [],
-            ice_callee: [],
+            ice_caller: "",
+            ice_callee: "",
             caller_con_result: "",
             callee_con_result: "",
             connection_retry_count: 0
