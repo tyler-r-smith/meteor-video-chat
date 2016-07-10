@@ -52,7 +52,8 @@
                         caller_id: user._id
                     }, {
                         callee_id: user._id
-                    }],
+                    }]
+                }, {
                     $or: [{
                         status: "R"
                     }, {
