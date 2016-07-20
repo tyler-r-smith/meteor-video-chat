@@ -130,18 +130,7 @@ To end a call simply call the following function:
     Meteor.VideoCallServices.callTerminated();
 This will call the same function for both users, which will be followed by the "onCallTerminated" event. 
 
-## TODO
- 1. Detect network latency and handle reconnect if necessary
- 2. Add option to continue with only audio if latency is too high
- 3. Handle audio-only connection
- 4. Tutorial video 
+## Next steps 
+ 1. Improve Example
+ 2. Implement Cordova support
 
-## Changelog
- - 18:39GMT 19/06/2016 Version 0.2.16 Added ability to specify 
- - 18:35GMT 11/04/2016 Version 0.2.10 Added session variable to allow reactive handling of status change
- - 16:15GMT 23/03/2016 Version 0.2.3 Removed hardcoded STUN/TURN servers, to be initialized on startup
- - 05:38GMT 23/03/2016 Version 0.2.2 Added call ignore function and onCallIgnored event
- - 04:08GMT 23/03/2016 version 0.2.1 Program is no longer called from window, but Meteor instead, as per usual development style
- - 01:10GMT 23/03/2016 version 0.1.7 Fixed and tested connection issues. Used for call from UK to China.
- - 16:03GMT 20/03/2016 version 0.1.5 Serious refactoring of connection process to decouple ICE exhange from call acceptance process. Additional parameter in loadLocalWebcam function to allow the user to specify whether they would like the function to initialize the RTCSession
- - 10:52GMT 20/03/2016 version 0.1.0 published
