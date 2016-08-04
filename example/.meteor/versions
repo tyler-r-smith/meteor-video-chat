@@ -63,6 +63,8 @@ npm-mongo@1.4.45
 observe-sequence@1.0.12
 ordered-dict@1.0.8
 peppelg:bootstrap-3-modal@1.0.4
+percolate:momentum@0.7.2
+percolate:velocityjs@1.1.0
 promise@0.7.3
 random@1.0.10
 rate-limit@1.0.5

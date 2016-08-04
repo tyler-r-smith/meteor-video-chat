@@ -4,6 +4,11 @@
 
 <body>
     <h1>Welcome to Meteor Video Chat!</h1> {{>loginButtons}} {{> MeteorVideoChat}}
+    {{#if loggedIn}}
+    {{>MeteorVideoChat}}
+    {{else}}
+    {{>LoginPage}}
+    {{/if}}
 </body>
 
 
