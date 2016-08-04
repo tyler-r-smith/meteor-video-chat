@@ -216,7 +216,6 @@ navigator.sayswho= (function(){
                   ice_caller: "",
                   ice_callee: ""
                 },
-
                 $inc: {
                   connection_retry_count: 1
                 }

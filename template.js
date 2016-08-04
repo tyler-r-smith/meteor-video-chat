@@ -224,7 +224,7 @@ renderCallTemplate = function(template) {
 
                     if (message.fields.ice_caller != undefined) {
                         const ice = message.fields.ice_caller;
-                        console.log("loadingIce", ice);
+                        console.log("loadingIce", message);
                         Meteor.VideoCallServices.peerConnection.addIceCandidate(
                             new RTCIceCandidate(JSON.parse(ice.string)));
 

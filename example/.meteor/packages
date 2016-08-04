@@ -17,8 +17,6 @@ standard-minifier-js    # JS minifier run for production mode
 es5-shim                # ECMAScript 5 compatibility for older browsers.
 ecmascript              # Enable ECMAScript2015+ syntax in app code
 
-autopublish             # Publish all data to the clients (for prototyping)
-insecure                # Allow all DB writes from clients (for prototyping)
 elmarti:video-chat
 accounts-password
 accounts-ui
@@ -26,3 +24,5 @@ session
 twbs:bootstrap
 peppelg:bootstrap-3-modal
 percolate:momentum
+chrismbeckett:toastr
+mizzao:user-status

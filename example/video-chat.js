@@ -1,4 +1,13 @@
 if (Meteor.isServer) {
+  Meteor.users.find({
+    "status.online": true
+  }).observe({
+    removed(_id) {
+      Meteor.users.remove({
+        _id
+      });
+    }
+  });
   Meteor.publish("userList", function() {
     return Meteor.users.find({
       "status.online": true
@@ -6,16 +15,23 @@ if (Meteor.isServer) {
       fields: {
         profile: 1,
         status: 1,
-        emails: 1
+        username: 1
       }
     });
   });
 }
 if (Meteor.isClient) {
+
   Template.body.onRendered(renderCallTemplate);
+  Template.body.helpers({
+    loggedIn() {
+      return Meteor.user() || Meteor.loggingIn();
+    }
+
+  })
   Meteor.startup(function() {
     Meteor.VideoCallServices.onReceivePhoneCall = function() {
-      Modal.show("incomingCall", {}, {
+      Modal.show("chatModal", {}, {
         backdrop: 'static'
       });
     }
@@ -90,40 +106,49 @@ if (Meteor.isClient) {
 
 
   Template.MeteorVideoChat.events({
+    "click .action_logout"(){
+      Meteor.logout(function(err){
+        if(err) toastr.error(err.message);
+        else toastr.success("Logged out");
+      })
+    },
     "click #answer": function() {
       Meteor.VideoCallServices.answerCall();
     },
     "click .userIDLink": function(event) {
-      console.log(event.target.childNodes[0].data);
-      let thisId = Meteor.users.findOne({
-        "emails.address": event.target.childNodes[0].data
-      })._id;
       Modal.show("chatModal", {
-        callee: thisId,
-        calleename: event.target.childNodes[0].data,
+        callee: this._id,
+        calleename: this.username,
         isCaller: true
       }, {
-        backdrop: 'static'
-      })
+        backdrop: 'static',
+        keyboard: false
+      });
 
     }
   });
   //{_id:{$ne:Meteor.userId()}}
   Template.MeteorVideoChat.helpers({
-    getEmail: function() {
-      console.log(this);
-      return this.emails[0].address;
-    },
-    isntCurrentlyLoggedInUser: function() {
-      return !(this._id == Meteor.userId());
-    },
-    getUsers: function() {
-      return Meteor.users.find({
-        
+check(asd){
+  console.log(asd);
+},
+    hasUsers(){
+       return Meteor.users.find({
+        _id: {
+          $ne: Meteor.userId()
+        },
         "status.online": true
-      }).fetch();
+      }).count() >0;
     },
-    getStatus: function() {
+    getUsers() {
+      return Meteor.users.find({
+        _id: {
+          $ne: Meteor.userId()
+        },
+        "status.online": true
+      });
+    },
+    getStatus() {
       let callState = Session.get("callState");
       if (callState)
         return callState.message;
@@ -141,7 +166,11 @@ if (Meteor.isClient) {
   Template.chatModal.onRendered(function() {
 
     let self = this;
-
+    const receiving = Meteor.VideoCallServices.VideoChatCallLog.findOne({
+            $or:[{status: "C",},{status: "R",}],
+            callee_id: Meteor.userId()
+        });
+if(!receiving)
     Meteor.VideoCallServices.loadLocalWebcam(true, function() {
       console.log("callback");
       Meteor.VideoCallServices.callRemote(self.data.callee)
@@ -152,40 +181,12 @@ if (Meteor.isClient) {
   Template.chatModal.onDestroyed(function() {});
 
   Template.chatModal.events({
-    "click #closeChat": function(event, template) {
-      Meteor.VideoCallServices.callTerminated();
-      Modal.hide(template);
-    }
-  })
-
-
-
-  Template.incomingCall.onCreated(function() {
-    Meteor.VideoCallServices.setLocalWebcam("videoChatCallerVideo");
-    Meteor.VideoCallServices.setRemoteWebcam("videoChatAnswerVideo");
-  })
-  Template.incomingCall.helpers({
-    getCallerName: function() {
-      let callData = VideoChatCallLog.findOne({
-        _id: Session.get("currentPhoneCall")
-      });
-      return Meteor.users.findOne({
-        _id: callData.caller_id
-      }).emails[0].address;
-    },
-    getStatus: function() {
-      let callState = Session.get("callState");
-      if (callState)
-        return callState.message;
-    }
-  });
-  Template.incomingCall.events({
-    "click #answerCall": function(event, template) {
+     "click #answerCall" (event, template) {
       Meteor.VideoCallServices.loadLocalWebcam(false, function() {
         Meteor.VideoCallServices.answerCall();
       });
     },
-    "click #ignoreCall": function(event, template) {
+    "click #ignoreCall" (event, template) {
       Meteor.VideoCallServices.ignoreCall();
       Modal.hide(template);
     },
@@ -194,4 +195,46 @@ if (Meteor.isClient) {
       Modal.hide(template);
     }
   })
+  Template.chatModal.helpers({
+      getCallerName() {
+      let callData = Meteor.VideoCallServices.VideoChatCallLog.findOne({
+        _id: Session.get("currentPhoneCall")
+      });
+      return Meteor.users.findOne({
+        _id: callData.caller_id
+      }).username;
+    },
+    getStatus() {
+      let callState = Session.get("callState");
+      if (callState)
+        return callState.message;
+    },
+    incomingPhoneCall(){
+      return Meteor.VideoCallServices.VideoChatCallLog.findOne({
+            $or:[{status: "C",},{status: "R",}],
+            callee_id: Meteor.userId()
+        });
+    }
+  })
+  Template.LoginPage.events({
+    "submit #loginForm" (event) {
+      console.log("login form");
+      event.preventDefault();
+      const userName = event.target[0].value;
+      Modal.show("modal_loading", null, {
+        backdrop: "static",
+        keyboard: false
+      })
+      const accountData = {
+        username: userName,
+        password: userName
+      };
+      Accounts.createUser(accountData, (err) => {
+        Modal.hide();
+        if (err) toastr.error(err.message);
+      });
+
+    }
+  })
+
 }
