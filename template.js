@@ -1,3 +1,5 @@
+import { Session } from 'meteor/session';
+
 renderCallTemplate = function(template) {
     Session.set("currentPhoneCall", null);
     Session.set("phoneIsRinging", false);
@@ -156,9 +158,6 @@ renderCallTemplate = function(template) {
                         console.log("ice callee", message.fields);
                         let iceCaller = message.fields.ice_callee;
 
-
-
-
                         Meteor.VideoCallServices.peerConnection.addIceCandidate(
                             new RTCIceCandidate(JSON.parse(iceCaller)),
                             function() {
@@ -170,7 +169,6 @@ renderCallTemplate = function(template) {
 
 
                     }
-
                     if (message.fields.SDP_callee != undefined) {
                         console.log("sdp_callee");
                         Meteor.VideoCallServices.peerConnection.setRemoteDescription(new RTCSessionDescription(
@@ -225,8 +223,9 @@ renderCallTemplate = function(template) {
                     if (message.fields.ice_caller != undefined) {
                         const ice = message.fields.ice_caller;
                         console.log("loadingIce", message);
+                        console.log("iceString", ice, ice.string);
                         Meteor.VideoCallServices.peerConnection.addIceCandidate(
-                            new RTCIceCandidate(JSON.parse(ice.string)));
+                            new RTCIceCandidate(JSON.parse(ice)));
 
                     }
                 }

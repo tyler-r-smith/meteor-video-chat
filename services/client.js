@@ -273,7 +273,8 @@ navigator.sayswho= (function(){
             })
         }
         this.peerConnection.onaddstream = function(event) {
-          console.log("addStream", event);
+          console.log("caller addStream", event);
+          console.log("");
           var video = document.getElementById(Meteor.VideoCallServices.remoteVideoHTMLId);
           video.src = URL.createObjectURL(event.stream);
           video.play();
@@ -308,8 +309,8 @@ navigator.sayswho= (function(){
 
         }
         this.peerConnection.onaddstream = function(event) {
-          console.log("addStream", event);
-          console.log(Meteor.VideoCallServices.remoteVideoHTMLId);
+          console.log("callee adding stream event: ", event);
+          console.log("remote", Meteor.VideoCallServices.remoteVideoHTMLId);
           var video = document.getElementById(Meteor.VideoCallServices.remoteVideoHTMLId);
           video.src = URL.createObjectURL(event.stream);
           video.play();

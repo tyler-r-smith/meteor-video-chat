@@ -1,5 +1,5 @@
 Package.describe({
-  name: 'elmarti:video-chat',
+  name: 'elmarti-local:video-chat',
   version: '0.4.4',
   // Brief, one-line summary of the package.
   summary: 'Simple WebRTC Video Chat for your app.',
@@ -14,7 +14,7 @@ Package.onUse(function(api) {
   api.versionsFrom('1.2.1');
   api.use('ecmascript');
   api.use("mizzao:user-status@0.6.6");
-  api.use(['templating'], 'client');
+  api.use(['templating', 'session'], 'client');
   api.addFiles(['services/server.js', 'services/publish.js'], "server");
   api.addFiles(['template.js', 'services/client.js'], "client");
   api.export(['VideoChatCallLog', 'VideoCallServices', "renderCallTemplate"]);
